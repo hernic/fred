@@ -481,14 +481,12 @@ public class PproxyToadlet extends Toadlet {
 			startingPluginsHeader.addChild("th", l10n("startingPluginName"));
 			startingPluginsHeader.addChild("th", l10n("startingPluginStatus"));
 			startingPluginsHeader.addChild("th", l10n("startingPluginTime"));
-			Iterator<PluginProgress> startingPluginsIterator = startingPlugins.iterator();
-			while (startingPluginsIterator.hasNext()) {
-				PluginProgress pluginProgress = startingPluginsIterator.next();
-				HTMLNode startingPluginsRow = startingPluginsTable.addChild("tr");
-				startingPluginsRow.addChild("td", pluginProgress.getLocalisedPluginName());
-				startingPluginsRow.addChild(pluginProgress.toLocalisedHTML());
-				startingPluginsRow.addChild("td", "aligh", "right", TimeUtil.formatTime(pluginProgress.getTime()));
-			}
+            for (PluginProgress pluginProgress : startingPlugins) {
+                HTMLNode startingPluginsRow = startingPluginsTable.addChild("tr");
+                startingPluginsRow.addChild("td", pluginProgress.getLocalisedPluginName());
+                startingPluginsRow.addChild(pluginProgress.toLocalisedHTML());
+                startingPluginsRow.addChild("td", "aligh", "right", TimeUtil.formatTime(pluginProgress.getTime()));
+            }
 		}
 	}
 
@@ -512,42 +510,40 @@ public class PproxyToadlet extends Toadlet {
 			headerRow.addChild("th");
 			headerRow.addChild("th");
 			headerRow.addChild("th");
-			Iterator<PluginInfoWrapper> it = pm.getPlugins().iterator();
-			while (it.hasNext()) {
-				PluginInfoWrapper pi = it.next();
-				HTMLNode pluginRow = pluginTable.addChild("tr");
-				pluginRow.addChild("td", pi.getLocalisedPluginName());
-				if(advancedMode)
-					pluginRow.addChild("td", pi.getPluginClassName());
-				long ver = pi.getPluginLongVersion();
-				if(ver != -1)
-					pluginRow.addChild("td", pi.getPluginVersion()+" ("+ver+")");
-				else
-					pluginRow.addChild("td", pi.getPluginVersion());
-				if(advancedMode) {
-					pluginRow.addChild("td", pi.getThreadName());
-					pluginRow.addChild("td", new Date(pi.getStarted()).toString());
-				}
-				if (pi.isStopping()) {
-					pluginRow.addChild("td", l10n("pluginStopping"));
-					/* add two empty cells. */
-					pluginRow.addChild("td");
-					pluginRow.addChild("td");
-				} else {
-					if (pi.isPproxyPlugin()) {
-						HTMLNode visitForm = pluginRow.addChild("td").addChild("form", new String[] { "method", "action", "target", "rel" }, new String[] { "get", pi.getPluginClassName(), "_blank", "noreferrer noopener" });
-						visitForm.addChild("input", new String[] { "type", "name", "value" }, new String[] { "hidden", "formPassword", ctx.getFormPassword() });
-						visitForm.addChild("input", new String[] { "type", "value" }, new String[] { "submit", NodeL10n.getBase().getString("PluginToadlet.visit") });
-					} else
-						pluginRow.addChild("td");
-					HTMLNode unloadForm = ctx.addFormChild(pluginRow.addChild("td"), ".", "unloadPluginForm");
-					unloadForm.addChild("input", new String[] { "type", "name", "value" }, new String[] { "hidden", "unload", pi.getThreadName() });
-					unloadForm.addChild("input", new String[] { "type", "value" }, new String[] { "submit", l10n("unload") });
-					HTMLNode reloadForm = ctx.addFormChild(pluginRow.addChild("td"), ".", "reloadPluginForm");
-					reloadForm.addChild("input", new String[] { "type", "name", "value" }, new String[] { "hidden", "reload", pi.getThreadName() });
-					reloadForm.addChild("input", new String[] { "type", "value" }, new String[] { "submit", l10n("reload") });
-				}
-			}
+            for (PluginInfoWrapper pi : pm.getPlugins()) {
+                HTMLNode pluginRow = pluginTable.addChild("tr");
+                pluginRow.addChild("td", pi.getLocalisedPluginName());
+                if (advancedMode)
+                    pluginRow.addChild("td", pi.getPluginClassName());
+                long ver = pi.getPluginLongVersion();
+                if (ver != -1)
+                    pluginRow.addChild("td", pi.getPluginVersion() + " (" + ver + ")");
+                else
+                    pluginRow.addChild("td", pi.getPluginVersion());
+                if (advancedMode) {
+                    pluginRow.addChild("td", pi.getThreadName());
+                    pluginRow.addChild("td", new Date(pi.getStarted()).toString());
+                }
+                if (pi.isStopping()) {
+                    pluginRow.addChild("td", l10n("pluginStopping"));
+                    /* add two empty cells. */
+                    pluginRow.addChild("td");
+                    pluginRow.addChild("td");
+                } else {
+                    if (pi.isPproxyPlugin()) {
+                        HTMLNode visitForm = pluginRow.addChild("td").addChild("form", new String[]{"method", "action", "target", "rel"}, new String[]{"get", pi.getPluginClassName(), "_blank", "noreferrer noopener"});
+                        visitForm.addChild("input", new String[]{"type", "name", "value"}, new String[]{"hidden", "formPassword", ctx.getFormPassword()});
+                        visitForm.addChild("input", new String[]{"type", "value"}, new String[]{"submit", NodeL10n.getBase().getString("PluginToadlet.visit")});
+                    } else
+                        pluginRow.addChild("td");
+                    HTMLNode unloadForm = ctx.addFormChild(pluginRow.addChild("td"), ".", "unloadPluginForm");
+                    unloadForm.addChild("input", new String[]{"type", "name", "value"}, new String[]{"hidden", "unload", pi.getThreadName()});
+                    unloadForm.addChild("input", new String[]{"type", "value"}, new String[]{"submit", l10n("unload")});
+                    HTMLNode reloadForm = ctx.addFormChild(pluginRow.addChild("td"), ".", "reloadPluginForm");
+                    reloadForm.addChild("input", new String[]{"type", "name", "value"}, new String[]{"hidden", "reload", pi.getThreadName()});
+                    reloadForm.addChild("input", new String[]{"type", "value"}, new String[]{"submit", l10n("reload")});
+                }
+            }
 		}
 	}
 	
