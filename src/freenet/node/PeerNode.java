@@ -3257,7 +3257,7 @@ public abstract class PeerNode implements USKRetrieverCallback, BasePeerNode, Pe
 			if(count == null)
 				count = 1L;
 			else
-				count = count.longValue() + 1;
+				count = count + 1;
 			localNodeSentMessageTypes.put(messageSpecName, count);
 		}
 	}
@@ -3273,7 +3273,7 @@ public abstract class PeerNode implements USKRetrieverCallback, BasePeerNode, Pe
 			if(count == null)
 				count = 1L;
 			else
-				count = count.longValue() + 1;
+				count = count + 1;
 			localNodeReceivedMessageTypes.put(messageSpecName, count);
 		}
 	}
