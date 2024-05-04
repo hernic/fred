@@ -18,7 +18,7 @@ public class PebbleUtils {
   private static final PebbleEngine templateEngine;
 
   static {
-    ClasspathLoader loader = new ClasspathLoader(PebbleUtils.class.getClassLoader());
+    Loader loader = new ClasspathLoader(PebbleUtils.class.getClassLoader());
     loader.setPrefix(PebbleUtils.TEMPLATE_ROOT_PATH);
     loader.setSuffix(PebbleUtils.TEMPLATE_NAME_SUFFIX);
 
