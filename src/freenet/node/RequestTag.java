@@ -118,7 +118,7 @@ public class RequestTag extends UIDTag {
 
 	@Override
 	public void logStillPresent(Long uid) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("Still present after ").append(TimeUtil.formatTime(age()));
 		sb.append(" : ").append(uid).append(" : start=").append(start);
 		sb.append(" ssk=").append(isSSK).append(" from store=").append(servedFromDatastore);

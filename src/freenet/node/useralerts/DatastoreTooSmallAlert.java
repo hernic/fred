@@ -73,7 +73,7 @@ public class DatastoreTooSmallAlert implements UserAlert {
 		// Wizard never recommends sizes above 100 GiB, so claim a minimum of at most 50 GiB.
 		if (minSize > 50) minSize = 50;
 
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(l10n("description", "size", Long.toString(minSize)));
 		sb.append(" ");
 		sb.append(l10n("current", "size", currentSize + " GiB"));

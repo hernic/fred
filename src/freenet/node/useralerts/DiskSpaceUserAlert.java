@@ -82,7 +82,7 @@ public class DiskSpaceUserAlert implements UserAlert {
     @Override
     public String getText() {
         Status status = getStatus();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(l10n("notEnoughSpaceIn", "where", getWhere(status).toString()));
         sb.append(" ");
         sb.append(status.getExplanation());

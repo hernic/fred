@@ -348,7 +348,7 @@ public abstract class UIDTag {
 	// Also it is only used in logging anyway.
 	@Override
 	public synchronized String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(super.toString());
 		sb.append(":");
 		sb.append(uid);
