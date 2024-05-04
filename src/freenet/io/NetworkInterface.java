@@ -161,38 +161,38 @@ public class NetworkInterface implements Closeable {
 		} finally {
 			lock.unlock();
 		}
-		for (int serverSocketIndex = 0; serverSocketIndex < bindToTokenList.size(); serverSocketIndex++) {
-			InetSocketAddress addr = null;
-			String address = bindToTokenList.get(serverSocketIndex);
-			try {
-				ServerSocket serverSocket = createServerSocket();
-				addr = new InetSocketAddress(address, port);
-				serverSocket.setReuseAddress(true);
-				serverSocket.bind(addr);
-				Acceptor acceptor = new Acceptor(serverSocket);
-				try {
-					acceptor.setSoTimeout(timeout);
-				} catch (SocketException e) {
-					Logger.error(this, "Unable to setSoTimeout in setBindTo() on "+addr);
-				}
-				lock.lock();
-				try {
-					acceptors.add(acceptor);
-					runningAcceptors++;
-					executor.execute(acceptor, "Network Interface Acceptor for "+acceptor.serverSocket);
-				} finally {
-					lock.unlock();
-				}
-			} catch (IOException e) {
-				if(e instanceof SocketException && ignoreUnbindableIP6 && addr != null && 
-						addr.getAddress() instanceof Inet6Address)
-					continue;
-				System.err.println("Unable to bind to address "+address+" for port "+port);
-				Logger.error(this, "Unable to bind to address "+address+" for port "+port);
-				if(brokenList == null) brokenList = new ArrayList<String>();
-				brokenList.add(address);
-			}
-		}
+        for (String s : bindToTokenList) {
+            InetSocketAddress addr = null;
+            String address = s;
+            try {
+                ServerSocket serverSocket = createServerSocket();
+                addr = new InetSocketAddress(address, port);
+                serverSocket.setReuseAddress(true);
+                serverSocket.bind(addr);
+                Acceptor acceptor = new Acceptor(serverSocket);
+                try {
+                    acceptor.setSoTimeout(timeout);
+                } catch (SocketException e) {
+                    Logger.error(this, "Unable to setSoTimeout in setBindTo() on " + addr);
+                }
+                lock.lock();
+                try {
+                    acceptors.add(acceptor);
+                    runningAcceptors++;
+                    executor.execute(acceptor, "Network Interface Acceptor for " + acceptor.serverSocket);
+                } finally {
+                    lock.unlock();
+                }
+            } catch (IOException e) {
+                if (e instanceof SocketException && ignoreUnbindableIP6 && addr != null &&
+                        addr.getAddress() instanceof Inet6Address)
+                    continue;
+                System.err.println("Unable to bind to address " + address + " for port " + port);
+                Logger.error(this, "Unable to bind to address " + address + " for port " + port);
+                if (brokenList == null) brokenList = new ArrayList<String>();
+                brokenList.add(address);
+            }
+        }
 		// Signal at the end, even if the last one didn't succeed.
 		lock.lock();
 		try {

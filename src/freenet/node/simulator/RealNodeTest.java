@@ -63,10 +63,10 @@ public class RealNodeTest {
 			// First set the locations up so we don't spend a long time swapping just to stabilise each network.
 			double div = 1.0 / nodes.length;
 			double loc = 0.0;
-			for (int i=0; i<nodes.length; i++) {
-				nodes[i].setLocation(loc);
-				loc += div;
-			}
+            for (Node node : nodes) {
+                node.setLocation(loc);
+                loc += div;
+            }
 		}
 		if(forceNeighbourConnections) {
 			for(int i=0;i<nodes.length;i++) {
@@ -74,28 +74,25 @@ public class RealNodeTest {
 				connect(nodes[i], nodes[next]);
 			}
 		}
-		for (int i=0; i<nodes.length; i++) {
-			Node a = nodes[i];
-			// Normalise the probabilities
-			double norm = 0.0;
-			for (int j=0; j<nodes.length; j++) {
-				Node b = nodes[j];
-				if (a.getLocation() == b.getLocation()) continue;
-				norm += 1.0 / distance (a, b);
-			}
-			// Create degree/2 outgoing connections
-			for (int k=0; k<nodes.length; k++) {
-				Node b = nodes[k];
-				if (a.getLocation() == b.getLocation()) continue;
-				double p = 1.0 / distance (a, b) / norm;
-				for (int n = 0; n < degree / 2; n++) {
-					if (random.nextFloat() < p) {
-						connect(a, b);
-						break;
-					}
-				}
-			}
-		}
+        for (Node a : nodes) {
+            // Normalise the probabilities
+            double norm = 0.0;
+            for (Node b : nodes) {
+                if (a.getLocation() == b.getLocation()) continue;
+                norm += 1.0 / distance(a, b);
+            }
+            // Create degree/2 outgoing connections
+            for (Node b : nodes) {
+                if (a.getLocation() == b.getLocation()) continue;
+                double p = 1.0 / distance(a, b) / norm;
+                for (int n = 0; n < degree / 2; n++) {
+                    if (random.nextFloat() < p) {
+                        connect(a, b);
+                        break;
+                    }
+                }
+            }
+        }
 	}
 	
 	static void connect(Node a, Node b) {
@@ -144,33 +141,33 @@ public class RealNodeTest {
 			double totalPingTime = 0.0;
 			double maxPingTime = 0.0;
 			double minPingTime = Double.MAX_VALUE;
-			for(int i=0;i<nodes.length;i++) {
-				int countConnected = nodes[i].getPeers().countConnectedDarknetPeers();
-				int countAlmostConnected = nodes[i].getPeers().countAlmostConnectedDarknetPeers();
-				int countTotal = nodes[i].getPeers().countValidPeers();
-				int countBackedOff = nodes[i].getPeers().countBackedOffPeers(false);
-				int countCompatible = nodes[i].getPeers().countCompatibleDarknetPeers();
-				totalPeers += countTotal;
-				totalConnections += countConnected;
-				totalPartialConnections += countAlmostConnected;
-				totalCompatibleConnections += countCompatible;
-				totalBackedOff += countBackedOff;
-				double pingTime = nodes[i].getNodeStats().getNodeAveragePingTime();
-				totalPingTime += pingTime;
-				if(pingTime > maxPingTime) maxPingTime = pingTime;
-				if(pingTime < minPingTime) minPingTime = pingTime;
-				if(countConnected == countTotal) {
-					countFullyConnected++;
-					if(countBackedOff == 0) countReallyConnected++;
-				} else {
-					if(logMINOR)
-						Logger.minor(RealNodeTest.class, "Connection count for "+nodes[i]+" : "+countConnected+" partial "+countAlmostConnected);
-				}
-				if(countBackedOff > 0) {
-					if(logMINOR)
-						Logger.minor(RealNodeTest.class, "Backed off: "+nodes[i]+" : "+countBackedOff);
-				}
-			}
+            for (Node node : nodes) {
+                int countConnected = node.getPeers().countConnectedDarknetPeers();
+                int countAlmostConnected = node.getPeers().countAlmostConnectedDarknetPeers();
+                int countTotal = node.getPeers().countValidPeers();
+                int countBackedOff = node.getPeers().countBackedOffPeers(false);
+                int countCompatible = node.getPeers().countCompatibleDarknetPeers();
+                totalPeers += countTotal;
+                totalConnections += countConnected;
+                totalPartialConnections += countAlmostConnected;
+                totalCompatibleConnections += countCompatible;
+                totalBackedOff += countBackedOff;
+                double pingTime = node.getNodeStats().getNodeAveragePingTime();
+                totalPingTime += pingTime;
+                if (pingTime > maxPingTime) maxPingTime = pingTime;
+                if (pingTime < minPingTime) minPingTime = pingTime;
+                if (countConnected == countTotal) {
+                    countFullyConnected++;
+                    if (countBackedOff == 0) countReallyConnected++;
+                } else {
+                    if (logMINOR)
+                        Logger.minor(RealNodeTest.class, "Connection count for " + node + " : " + countConnected + " partial " + countAlmostConnected);
+                }
+                if (countBackedOff > 0) {
+                    if (logMINOR)
+                        Logger.minor(RealNodeTest.class, "Backed off: " + node + " : " + countBackedOff);
+                }
+            }
 			double avgPingTime = totalPingTime / nodes.length;
 			if(countFullyConnected == nodes.length && countReallyConnected == nodes.length && totalBackedOff == 0 &&
 					minPingTime < NodeStats.DEFAULT_SUB_MAX_PING_TIME && maxPingTime < NodeStats.DEFAULT_SUB_MAX_PING_TIME && avgPingTime < NodeStats.DEFAULT_SUB_MAX_PING_TIME) {

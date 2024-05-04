@@ -853,8 +853,7 @@ public class SplitFileFetcherStorage {
                 segmentsToTryDecode.add(segment);
             }
         }
-        for(int i=0;i<segments.length;i++) {
-            SplitFileFetcherSegmentStorage segment = segments[i];
+        for (SplitFileFetcherSegmentStorage segment : segments) {
             try {
                 segment.readSegmentKeys();
             } catch (ChecksumFailedException e) {

@@ -354,13 +354,12 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 		if (!"#".equals(name)) {
 			return name;
 		}
-		for (int childIndex = 0, childCount = children.size(); childIndex < childCount; childIndex++) {
-			HTMLNode childNode = children.get(childIndex);
-			String tag = childNode.getFirstTag();
-			if (tag != null) {
-				return tag;
-			}
-		}
+        for (HTMLNode childNode : children) {
+            String tag = childNode.getFirstTag();
+            if (tag != null) {
+                return tag;
+            }
+        }
 		return null;
 	}
 
@@ -379,11 +378,10 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 				HTMLEncoder.encodeToBuffer(content, tagBuffer);
 				return tagBuffer;
 			}
-			
-			for(int childIndex = 0, childCount = children.size(); childIndex < childCount; childIndex++) {
-				HTMLNode childNode = children.get(childIndex);
-				childNode.generate(tagBuffer);
-			}
+
+            for (HTMLNode childNode : children) {
+                childNode.generate(tagBuffer);
+            }
 			return tagBuffer;
 		}
 		// Perhaps this should be something else, but since I don't know if '#' was not just arbitrary chosen, I'll just pick '%'
@@ -421,10 +419,9 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 				tagBuffer.append('\n');
 				tagBuffer.append(indentString(indentDepth+1));
 			}
-			for (int childIndex = 0, childCount = children.size(); childIndex < childCount; childIndex++) {
-				HTMLNode childNode = children.get(childIndex);
-				childNode.generate(tagBuffer,indentDepth+1);
-			}
+            for (HTMLNode childNode : children) {
+                childNode.generate(tagBuffer, indentDepth + 1);
+            }
 		}
 		/* add a closing tag */
 		if (newlineOpen(name)) {
@@ -444,10 +441,9 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 			return content;
 		}
 		StringBuilder tagBuffer=new StringBuilder();
-		for(int childIndex = 0, childCount = children.size(); childIndex < childCount; childIndex++) {
-			HTMLNode childNode = children.get(childIndex);
-			childNode.generate(tagBuffer);
-		}
+        for (HTMLNode childNode : children) {
+            childNode.generate(tagBuffer);
+        }
 		return tagBuffer.toString();
 	}
 	

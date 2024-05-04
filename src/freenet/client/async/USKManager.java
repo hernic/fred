@@ -332,10 +332,9 @@ public class USKManager {
 				@Override
 				public void run() {
 					if(cancelled != null) {
-						for(int i=0;i<cancelled.size();i++) {
-							USKFetcher fetcher = cancelled.get(i);
-							fetcher.cancel(USKManager.this.context);
-						}
+                        for (USKFetcher fetcher : cancelled) {
+                            fetcher.cancel(USKManager.this.context);
+                        }
 					}
 					if(scheduleMe != null) scheduleMe.schedule(USKManager.this.context);
 				}
