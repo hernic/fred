@@ -713,7 +713,7 @@ public abstract class ConnectionsToadlet extends Toadlet {
 			String[] nodesToAdd=ref.toString().split("\nEnd\n");
 			for(int i=0;i<nodesToAdd.length;i++) {
 				String[] split = nodesToAdd[i].split("\n");
-				StringBuffer sb = new StringBuffer(nodesToAdd[i].length());
+				StringBuilder sb = new StringBuilder(nodesToAdd[i].length());
 				boolean first = true;
 				for(String s : split) {
 					if(s.equals("End")) break;

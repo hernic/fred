@@ -702,7 +702,7 @@ public final class PageMaker {
 	public InfoboxNode getInfobox(String category, HTMLNode header, String title, boolean isUnique) {
 		if (header == null) throw new NullPointerException();
 
-		StringBuffer classes = new StringBuffer("infobox");
+		StringBuilder classes = new StringBuilder("infobox");
 		if(category != null) {
 			classes.append(" ");
 			classes.append(category);

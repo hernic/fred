@@ -1272,7 +1272,7 @@ public final class SimpleToadletServer implements ToadletContainer, Runnable, Li
 
 	@Override
 	public String getURL(String host) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		if(ssl)
 			sb.append("https");
 		else

@@ -136,7 +136,7 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 	}
 
 	private String indentString(int indentDepth) {
-		StringBuffer indentLine = new StringBuffer();
+		StringBuilder indentLine = new StringBuilder();
 
 		for (int indentIndex = 0, indentCount = indentDepth+1; indentIndex < indentCount; indentIndex++) {
 			indentLine.append('\t');

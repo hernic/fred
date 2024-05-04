@@ -262,7 +262,7 @@ public class PluginManager {
 	}
 
 	private static String pluginList(Collection<PluginInfoWrapper> wrappers) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for(PluginInfoWrapper pi : wrappers) {
 			sb.append(pi.getFilename());
 			sb.append('\n');
