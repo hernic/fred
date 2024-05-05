@@ -147,7 +147,7 @@ public class ArchiveManager {
 		archiveHandlers = LRUMap.createSafeMap(FreenetURI.FAST_COMPARATOR);
 		this.maxCachedElements = maxCachedElements;
 		this.maxCachedData = maxCachedData;
-		storedData = new LRUMap<ArchiveKey, ArchiveStoreItem>();
+		storedData = new LRUMap<>();
 		this.maxArchivedFileSize = maxArchivedFileSize;
 		this.tempBucketFactory = tempBucketFactory;
 		logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
@@ -376,7 +376,7 @@ public class ArchiveManager {
 			ArchiveEntry entry;
 
 			byte[] buf = new byte[32768];
-			HashSet<String> names = new HashSet<String>();
+			HashSet<String> names = new HashSet<>();
 			boolean gotMetadata = false;
 
 outerTAR:		while(true) {
@@ -461,7 +461,7 @@ outerTAR:		while(true) {
 			ZipEntry entry;
 
 			byte[] buf = new byte[32768];
-			HashSet<String> names = new HashSet<String>();
+			HashSet<String> names = new HashSet<>();
 			boolean gotMetadata = false;
 
 outerZIP:		while(true) {
@@ -563,7 +563,7 @@ outerZIP:		while(true) {
 		 */
 		// Root directory.
 		// String -> either itself, or another HashMap
-		HashMap<String, Object> dir = new HashMap<String, Object>();
+		HashMap<String, Object> dir = new HashMap<>();
 		for (String name : names) {
 			addToDirectory(dir, name, "");
 		}

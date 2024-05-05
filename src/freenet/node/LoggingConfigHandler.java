@@ -45,7 +45,7 @@ public class LoggingConfigHandler {
 		@Override
 		public String[] getPossibleValues() {
 			LogLevel[] priorities = LogLevel.values();
-			ArrayList<String> values = new ArrayList<String>(priorities.length+1);
+			ArrayList<String> values = new ArrayList<>(priorities.length + 1);
 			for(LogLevel p : priorities)
 				values.add(p.name());
 			

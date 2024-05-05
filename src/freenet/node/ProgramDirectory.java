@@ -24,7 +24,7 @@ public class ProgramDirectory {
 	/** Directory path */
 	protected File dir = null;
 	/** Keeps track of all the files saved in this directory */
-	final protected HashSet<String> files = new HashSet<String>();
+	final protected HashSet<String> files = new HashSet<>();
 	final private StringCallback callback;
 	final private String moveErrMsg;
 

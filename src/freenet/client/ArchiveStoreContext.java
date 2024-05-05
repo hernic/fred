@@ -46,7 +46,7 @@ class ArchiveStoreContext {
 	ArchiveStoreContext(FreenetURI key, ArchiveManager.ARCHIVE_TYPE archiveType) {
 		this.key = key;
 		this.archiveType = archiveType;
-		myItems = new LinkedList<ArchiveStoreItem>();
+		myItems = new LinkedList<>();
 	}
 
 	/** Returns the size of the archive last time we fetched it, or -1 */

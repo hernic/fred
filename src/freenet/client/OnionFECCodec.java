@@ -65,7 +65,7 @@ public class OnionFECCodec extends FECCodec {
             }
         }
         PureCode code = new PureCode(k, n);
-        recentlyUsedCodecs.push(key, new SoftReference<PureCode>(code));
+        recentlyUsedCodecs.push(key, new SoftReference<>(code));
         return code;
     }
     

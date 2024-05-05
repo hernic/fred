@@ -77,10 +77,10 @@ public class NetworkInterface implements Closeable {
 	private final Condition acceptorClosedCondition = lock.newCondition();
 
 	/** Acceptors created by this interface. */
-	private final List<Acceptor>  acceptors = new ArrayList<Acceptor>();
+	private final List<Acceptor>  acceptors = new ArrayList<>();
 
 	/** Queue of accepted client connections. */
-	private final Queue<Socket> acceptedSockets = new ArrayDeque<Socket>();
+	private final Queue<Socket> acceptedSockets = new ArrayDeque<>();
 	
 	/** AllowedHosts structure */
 	protected final AllowedHosts allowedHosts;
@@ -139,7 +139,7 @@ public class NetworkInterface implements Closeable {
 	public String[] setBindTo(String bindTo, boolean ignoreUnbindableIP6) {
                 if(bindTo == null || bindTo.isEmpty()) bindTo = NetworkInterface.DEFAULT_BIND_TO;
 		StringTokenizer bindToTokens = new StringTokenizer(bindTo, ",");
-		List<String> bindToTokenList = new ArrayList<String>();
+		List<String> bindToTokenList = new ArrayList<>();
 		List<String> brokenList = null;
 		while (bindToTokens.hasMoreTokens()) {
 			bindToTokenList.add(bindToTokens.nextToken().trim());
@@ -189,7 +189,7 @@ public class NetworkInterface implements Closeable {
                     continue;
                 System.err.println("Unable to bind to address " + address + " for port " + port);
                 Logger.error(this, "Unable to bind to address " + address + " for port " + port);
-                if (brokenList == null) brokenList = new ArrayList<String>();
+                if (brokenList == null) brokenList = new ArrayList<>();
                 brokenList.add(address);
             }
         }

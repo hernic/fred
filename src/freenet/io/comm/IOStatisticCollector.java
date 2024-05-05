@@ -25,7 +25,7 @@ public class IOStatisticCollector {
 	static boolean ENABLE_PER_ADDRESS_TRACKING = false;
 	
 	public IOStatisticCollector() {
-		targets = new LinkedHashMap<String, StatisticEntry>();
+		targets = new LinkedHashMap<>();
 		// TODO: only for testing!!!!
 		// This should only happen once
 		//SNMPAgent.create();

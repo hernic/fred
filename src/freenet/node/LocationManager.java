@@ -130,7 +130,7 @@ public class LocationManager implements ByteCounter {
         sender = new SwapRequestSender();
         this.r = r;
         this.node = node;
-        recentlyForwardedIDs = new Hashtable<Long, RecentlyForwardedItem>();
+        recentlyForwardedIDs = new Hashtable<>();
         // FIXME persist to disk!
         averageSwapTime = new BootstrappingDecayingRunningAverage(SEND_SWAP_INTERVAL, 0, Integer.MAX_VALUE, 20, null);
         timeLocSet = System.currentTimeMillis();
@@ -1119,7 +1119,7 @@ public class LocationManager implements ByteCounter {
     }
 
     /** Queue of swap requests to handle after this one. */
-    private final Deque<Message> incomingMessageQueue = new LinkedList<Message>();
+    private final Deque<Message> incomingMessageQueue = new LinkedList<>();
 
     static final int MAX_INCOMING_QUEUE_LENGTH = 10;
 
@@ -1530,7 +1530,7 @@ public class LocationManager implements ByteCounter {
      * We lost the connection to a node, or it was restarted.
      */
     public void lostOrRestartedNode(PeerNode pn) {
-        List<RecentlyForwardedItem> v = new ArrayList<RecentlyForwardedItem>();
+        List<RecentlyForwardedItem> v = new ArrayList<>();
         synchronized(recentlyForwardedIDs) {
         	Set<Map.Entry<Long, RecentlyForwardedItem>> entrySet = recentlyForwardedIDs.entrySet();
 			for (Map.Entry<Long, RecentlyForwardedItem> entry : entrySet) {
@@ -1579,7 +1579,7 @@ public class LocationManager implements ByteCounter {
 
     private static final long MAX_AGE = DAYS.toMillis(7);
 
-    private final TimeSortedHashtable<Double> knownLocs = new TimeSortedHashtable<Double>();
+    private final TimeSortedHashtable<Double> knownLocs = new TimeSortedHashtable<>();
 
     void registerLocationLink(double d, double t) {
     	if(logMINOR) Logger.minor(this, "Known Link: "+d+ ' ' +t);

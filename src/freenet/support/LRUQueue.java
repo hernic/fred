@@ -18,8 +18,8 @@ public class LRUQueue<T> {
      * push is by far the most done operation, this should be an
      * overall improvement.
      */
-	private final DoublyLinkedListImpl<QItem<T>> list = new DoublyLinkedListImpl<QItem<T>>();
-	private final Map<T, QItem<T>> hash = new HashMap<T, QItem<T>>();
+	private final DoublyLinkedListImpl<QItem<T>> list = new DoublyLinkedListImpl<>();
+	private final Map<T, QItem<T>> hash = new HashMap<>();
     
     public LRUQueue() {
     }
@@ -36,7 +36,7 @@ public class LRUQueue<T> {
 
 		QItem<T> insert = hash.get(obj);
         if (insert == null) {
-			insert = new QItem<T>(obj);
+			insert = new QItem<>(obj);
             hash.put(obj,insert);
         } else {
             list.remove(insert);
@@ -54,7 +54,7 @@ public class LRUQueue<T> {
 
 		QItem<T> insert = hash.get(obj);
         if (insert == null) {
-			insert = new QItem<T>(obj);
+			insert = new QItem<>(obj);
             hash.put(obj,insert);
         } else {
             list.remove(insert);

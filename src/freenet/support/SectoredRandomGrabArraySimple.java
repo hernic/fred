@@ -27,7 +27,7 @@ public class SectoredRandomGrabArraySimple<MyType,ChildType> extends SectoredRan
         if(rga == null) {
             if(logMINOR)
                 Logger.minor(this, "Adding new RGAWithClient for "+client+" on "+this+" for "+item);
-            rga = new RandomGrabArrayWithObject<ChildType>(client, this, root);
+            rga = new RandomGrabArrayWithObject<>(client, this, root);
             addElement(client, rga);
         }
         if(logMINOR)

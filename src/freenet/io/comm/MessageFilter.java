@@ -45,8 +45,8 @@ public final class MessageFilter {
     private boolean _matched;
     private PeerContext _droppedConnection;
     private MessageType _type;
-    private final List<Object> _fields = new ArrayList<Object>();
-    private final List<String> _fieldNames = new ArrayList<String>();
+    private final List<Object> _fields = new ArrayList<>();
+    private final List<String> _fieldNames = new ArrayList<>();
     private PeerContext _source;
     private long _timeout;
     /** If true, timeouts are relative to the start of waiting, if false, they are relative to

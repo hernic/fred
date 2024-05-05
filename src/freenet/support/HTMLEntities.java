@@ -309,8 +309,8 @@ public final class HTMLEntities {
 	
 	
 	static {
-		encodeMap = new HashMap<Character, String>();
-		decodeMap = new HashMap<String, Character>();
+		encodeMap = new HashMap<>();
+		decodeMap = new HashMap<>();
 		
 		for(Object[] ch: charArray) {
 			encodeMap.put((Character) ch[0], (String) ch[1]);

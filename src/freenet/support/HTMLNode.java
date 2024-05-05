@@ -30,17 +30,17 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 	 * separate child node to contain it. */
 	private String content;
 
-	private final Map<String, String> attributes = new HashMap<String, String>();
+	private final Map<String, String> attributes = new HashMap<>();
 
-	protected final List<HTMLNode> children = new ArrayList<HTMLNode>();
+	protected final List<HTMLNode> children = new ArrayList<>();
 
 	public HTMLNode(String name) {
 		this(name, null);
 	}
 
-	private static final ArrayList<String> EmptyTag = new ArrayList<String>(10);
-	private static final ArrayList<String> OpenTags = new ArrayList<String>(12);
-	private static final ArrayList<String> CloseTags = new ArrayList<String>(12);
+	private static final ArrayList<String> EmptyTag = new ArrayList<>(10);
+	private static final ArrayList<String> OpenTags = new ArrayList<>(12);
+	private static final ArrayList<String> CloseTags = new ArrayList<>(12);
 
 	static {
 		/* HTML elements which are allowed to be empty */

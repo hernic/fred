@@ -597,8 +597,8 @@ public class FailureTable {
 
 		OfferList(BlockOfferList offerList) {
 			this.offerList = offerList;
-			recentOffers = new ArrayList<BlockOffer>();
-			expiredOffers = new ArrayList<BlockOffer>();
+			recentOffers = new ArrayList<>();
+			expiredOffers = new ArrayList<>();
 			long now = System.currentTimeMillis();
 			for(BlockOffer offer: offerList.offers) {
 				if(!offer.isExpired(now))

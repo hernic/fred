@@ -74,7 +74,7 @@ public class NodeIPPortDetector {
 	 */
 	Peer[] detectPrimaryPeers() {
 		final boolean logMINOR = NodeIPPortDetector.logMINOR;
-		ArrayList<Peer> addresses = new ArrayList<Peer>();
+		ArrayList<Peer> addresses = new ArrayList<>();
 		FreenetInetAddress[] addrs = detectPrimaryIPAddress();
 		for(FreenetInetAddress addr: addrs) {
 			addresses.add(new Peer(addr, crypto.getPortNumber()));
@@ -87,7 +87,7 @@ public class NodeIPPortDetector {
 		PeerNode[] peerList = crypto.getPeerNodes();
 		
 		if(peerList != null) {
-			HashMap<Peer,Integer> countsByPeer = new HashMap<Peer,Integer>();
+			HashMap<Peer,Integer> countsByPeer = new HashMap<>();
 			// FIXME use a standard mutable int object, we have one somewhere
 			for(PeerNode pn: peerList) {
 				Peer p = pn.getRemoteDetectedPeer();

@@ -172,22 +172,22 @@ public class SeedAnnounceTracker {
 	private synchronized TrackerItem[] getTopTrackerItems(int count) {
 		TrackerItem[] items = new TrackerItem[itemsByIP.size()];
 		itemsByIP.valuesToArray(items);
-		Arrays.sort(items, new Comparator<TrackerItem>() {
-			
-			@Override
-			public int compare(TrackerItem arg0, TrackerItem arg1) {
-				int a = Math.max(arg0.totalAnnounceRequests, arg0.totalSeedConnects);
-				int b = Math.max(arg1.totalAnnounceRequests, arg1.totalSeedConnects);
-				if(a > b) return 1;
-				if(b > a) return -1;
-				if(arg0.totalAcceptedAnnounceRequests > arg1.totalAcceptedAnnounceRequests)
-					return 1;
-				else if(arg0.totalAcceptedAnnounceRequests < arg1.totalAcceptedAnnounceRequests)
-					return -1;
-				return 0;
-			}
-			
-		});
+		Arrays.sort(items, new Comparator<>() {
+
+            @Override
+            public int compare(TrackerItem arg0, TrackerItem arg1) {
+                int a = Math.max(arg0.totalAnnounceRequests, arg0.totalSeedConnects);
+                int b = Math.max(arg1.totalAnnounceRequests, arg1.totalSeedConnects);
+                if (a > b) return 1;
+                if (b > a) return -1;
+                if (arg0.totalAcceptedAnnounceRequests > arg1.totalAcceptedAnnounceRequests)
+                    return 1;
+                else if (arg0.totalAcceptedAnnounceRequests < arg1.totalAcceptedAnnounceRequests)
+                    return -1;
+                return 0;
+            }
+
+        });
 		int topLength = Math.min(count, items.length);
 		return Arrays.copyOfRange(items, items.length - topLength, items.length);
 	}

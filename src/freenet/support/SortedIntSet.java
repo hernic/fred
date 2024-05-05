@@ -27,12 +27,12 @@ public class SortedIntSet extends AbstractCollection<Integer> implements SortedS
 	 * Default constructor
 	 */
 	public SortedIntSet() {
-		this.data = new ArrayList<Integer>();
+		this.data = new ArrayList<>();
 	}
 	
 	public SortedIntSet(int[] input) {
 		assertSorted(input);
-		data = new ArrayList<Integer>(input.length);
+		data = new ArrayList<>(input.length);
 		for (int i : input) {
 			data.add(i);
 		}

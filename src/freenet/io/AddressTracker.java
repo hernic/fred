@@ -104,8 +104,8 @@ public class AddressTracker {
 		timeDefinitelyNoPacketsSentIP = System.currentTimeMillis();
 		timeDefinitelyNoPacketsReceivedPeer = System.currentTimeMillis();
 		timeDefinitelyNoPacketsSentPeer = System.currentTimeMillis();
-		peerTrackers = new HashMap<Peer, PeerAddressTrackerItem>();
-		ipTrackers = new HashMap<InetAddress, InetAddressAddressTrackerItem>();
+		peerTrackers = new HashMap<>();
+		ipTrackers = new HashMap<>();
 	}
 
 	private AddressTracker(SimpleFieldSet fs, long lastBootID) throws FSParseException {
@@ -122,7 +122,7 @@ public class AddressTracker {
 		timeDefinitelyNoPacketsReceivedIP = System.currentTimeMillis();
 		timeDefinitelyNoPacketsSentPeer = fs.getLong("TimeDefinitelyNoPacketsSentPeer");
 		timeDefinitelyNoPacketsSentIP = fs.getLong("TimeDefinitelyNoPacketsSentIP");
-		peerTrackers = new HashMap<Peer, PeerAddressTrackerItem>();
+		peerTrackers = new HashMap<>();
 		SimpleFieldSet peers = fs.subset("Peers");
 		if(peers != null) {
 		Iterator<String> i = peers.directSubsetNameIterator();
@@ -134,7 +134,7 @@ public class AddressTracker {
 		}
 		}
 		}
-		ipTrackers = new HashMap<InetAddress, InetAddressAddressTrackerItem>();
+		ipTrackers = new HashMap<>();
 		SimpleFieldSet ips = fs.subset("IPs");
 		if(ips != null) {
 		Iterator<String> i = ips.directSubsetNameIterator();

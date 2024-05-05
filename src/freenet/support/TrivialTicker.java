@@ -21,7 +21,7 @@ public class TrivialTicker implements Ticker {
 	
 	private final Executor executor;
 	
-	private final Hashtable<Runnable, TimerTask> jobs = new Hashtable<Runnable, TimerTask>();
+	private final Hashtable<Runnable, TimerTask> jobs = new Hashtable<>();
 	
 	private boolean running = true;
 	

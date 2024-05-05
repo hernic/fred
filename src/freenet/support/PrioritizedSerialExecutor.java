@@ -155,7 +155,7 @@ public class PrioritizedSerialExecutor implements Executor {
 		ArrayDeque<Runnable>[] jobs = (ArrayDeque<Runnable>[])
 			new ArrayDeque<?>[internalPriorityCount];
 		for (int i=0;i<jobs.length;i++) {
-			jobs[i] = new ArrayDeque<Runnable>();
+			jobs[i] = new ArrayDeque<>();
 		}
 		this.jobs = jobs;
 		this.priority = priority;

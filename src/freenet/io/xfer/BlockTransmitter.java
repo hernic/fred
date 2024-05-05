@@ -87,7 +87,7 @@ public class BlockTransmitter {
 	final ByteCounter _ctr;
 	final int PACKET_SIZE;
 	private final ReceiverAbortHandler abortHandler;
-	private HashSet<MessageItem> itemsPending = new HashSet<MessageItem>();
+	private HashSet<MessageItem> itemsPending = new HashSet<>();
 	
 	private final Ticker _ticker;
 	private final Executor _executor;

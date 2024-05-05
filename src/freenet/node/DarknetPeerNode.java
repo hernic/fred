@@ -210,10 +210,10 @@ public class DarknetPeerNode extends PeerNode {
 		privateDarknetCommentFileNumber = -1;
 
 		// Setup the extraPeerDataFileNumbers
-		extraPeerDataFileNumbers = new LinkedHashSet<Integer>();
+		extraPeerDataFileNumbers = new LinkedHashSet<>();
 
 		// Setup the queuedToSendN2NMExtraPeerDataFileNumbers
-		queuedToSendN2NMExtraPeerDataFileNumbers = new LinkedHashSet<Integer>();
+		queuedToSendN2NMExtraPeerDataFileNumbers = new LinkedHashSet<>();
 	}
 
 	/**
@@ -860,9 +860,9 @@ public class DarknetPeerNode extends PeerNode {
 	// FIXME this should be persistent across node restarts
 
 	/** Files I have offered to this peer */
-	private final HashMap<Long, FileOffer> myFileOffersByUID = new HashMap<Long, FileOffer>();
+	private final HashMap<Long, FileOffer> myFileOffersByUID = new HashMap<>();
 	/** Files this peer has offered to me */
-	private final HashMap<Long, FileOffer> hisFileOffersByUID = new HashMap<Long, FileOffer>();
+	private final HashMap<Long, FileOffer> hisFileOffersByUID = new HashMap<>();
 
 	private void storeOffers() {
 		// FIXME do something

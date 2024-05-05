@@ -400,7 +400,7 @@ public class FetchContext implements Cloneable, Serializable {
         if(x == 0) {
             allowedMIMETypes = null;
         } else {
-            allowedMIMETypes = new HashSet<String>();
+            allowedMIMETypes = new HashSet<>();
             for(int i=0;i<x;i++) {
                 allowedMIMETypes.add(dis.readUTF());
             }

@@ -131,7 +131,7 @@ public abstract class BaseFileBucket implements RandomAccessBucket {
 		// BaseFileBucket is a very common object, and often very long lived,
 		// so we need to minimize memory usage even at the cost of frequent allocations.
 		if(streams == null)
-			streams = new Vector<Closeable>(1, 1);
+			streams = new Vector<>(1, 1);
 		streams.add(stream);
 	}
 

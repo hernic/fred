@@ -100,7 +100,7 @@ public class SeedServerPeerNode extends PeerNode {
 	}
 
 	public InetAddress[] getInetAddresses() {
-		ArrayList<InetAddress> v = new ArrayList<InetAddress>();
+		ArrayList<InetAddress> v = new ArrayList<>();
 		for(Peer peer: getHandshakeIPs()) {
 			FreenetInetAddress fa = peer.getFreenetAddress().dropHostname();
 			if(fa == null) continue;

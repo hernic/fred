@@ -61,7 +61,7 @@ public class RequestTag extends UIDTag {
 		// If it's because of transfer coalescing, we won't get anything from the RequestSender, so we should not wait for it.
 		if(!coalesced)
 			sent = true;
-		sender = new WeakReference<RequestSender>(rs);
+		sender = new WeakReference<>(rs);
 	}
 	
 	@Override

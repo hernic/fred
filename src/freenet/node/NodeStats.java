@@ -496,18 +496,18 @@ public class NodeStats implements Persistable, BlockTimeCallback {
 		// This is a *network* level setting, because it affects the rate at which we initiate local
 		// requests, which could be seen by distant nodes.
 
-		node.getSecurityLevels().addNetworkThreatLevelListener(new SecurityLevelListener<NETWORK_THREAT_LEVEL>() {
+		node.getSecurityLevels().addNetworkThreatLevelListener(new SecurityLevelListener<>() {
 
-			@Override
-			public void onChange(NETWORK_THREAT_LEVEL oldLevel, NETWORK_THREAT_LEVEL newLevel) {
-				if(newLevel == NETWORK_THREAT_LEVEL.MAXIMUM)
-					ignoreLocalVsRemoteBandwidthLiability = true;
-				if(oldLevel == NETWORK_THREAT_LEVEL.MAXIMUM)
-					ignoreLocalVsRemoteBandwidthLiability = false;
-				// Otherwise leave it as it was. It defaults to false.
-			}
+            @Override
+            public void onChange(NETWORK_THREAT_LEVEL oldLevel, NETWORK_THREAT_LEVEL newLevel) {
+                if (newLevel == NETWORK_THREAT_LEVEL.MAXIMUM)
+                    ignoreLocalVsRemoteBandwidthLiability = true;
+                if (oldLevel == NETWORK_THREAT_LEVEL.MAXIMUM)
+                    ignoreLocalVsRemoteBandwidthLiability = false;
+                // Otherwise leave it as it was. It defaults to false.
+            }
 
-		});
+        });
 		
 		statsConfig.registerIgnoredOption("enableNewLoadManagementRT");
 		statsConfig.registerIgnoredOption("enableNewLoadManagementBulk");
@@ -601,14 +601,14 @@ public class NodeStats implements Persistable, BlockTimeCallback {
 		hourlyStatsRT = new HourlyStats(node);
 		hourlyStatsBulk = new HourlyStats(node);
 
-		avgMandatoryBackoffTimesRT = new Hashtable<String, TrivialRunningAverage>();
-		avgMandatoryBackoffTimesBulk = new Hashtable<String, TrivialRunningAverage>();
-		avgRoutingBackoffTimesRT = new Hashtable<String, TrivialRunningAverage>();
-		avgRoutingBackoffTimesBulk = new Hashtable<String, TrivialRunningAverage>();
-		avgTransferBackoffTimesRT = new Hashtable<String, TrivialRunningAverage>();
-		avgTransferBackoffTimesBulk = new Hashtable<String, TrivialRunningAverage>();
+		avgMandatoryBackoffTimesRT = new Hashtable<>();
+		avgMandatoryBackoffTimesBulk = new Hashtable<>();
+		avgRoutingBackoffTimesRT = new Hashtable<>();
+		avgRoutingBackoffTimesBulk = new Hashtable<>();
+		avgTransferBackoffTimesRT = new Hashtable<>();
+		avgTransferBackoffTimesBulk = new Hashtable<>();
 
-		avgDatabaseJobExecutionTimes = new Hashtable<String, TrivialRunningAverage>();
+		avgDatabaseJobExecutionTimes = new Hashtable<>();
 		
 		if(!NodeStarter.isTestingVM()) {
 			// Normal mode
@@ -3592,7 +3592,7 @@ public class NodeStats implements Persistable, BlockTimeCallback {
 		return (int)Math.max(1, Math.ceil((totalAnnounceForwards*1.0)/totalAnnouncements));
 	}
 
-	private final HashSet<Long> runningAnnouncements = new HashSet<Long>();
+	private final HashSet<Long> runningAnnouncements = new HashSet<>();
 
 	// FIXME make configurable, more sophisticated.
 	

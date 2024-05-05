@@ -75,8 +75,8 @@ public class Announcer {
 	Announcer(OpennetManager om) {
 		this.om = om;
 		this.node = om.getNode();
-		announcedToIdentities = new HashSet<ByteArrayWrapper>();
-		announcedToIPs = new HashSet<InetAddress>();
+		announcedToIdentities = new HashSet<>();
+		announcedToIPs = new HashSet<>();
 		logMINOR = Logger.shouldLog(LogLevel.MINOR, this);
 	}
 
@@ -263,7 +263,7 @@ public class Announcer {
 	}
 
 	public static List<SimpleFieldSet> readSeednodes(File file) {
-		List<SimpleFieldSet> list = new ArrayList<SimpleFieldSet>();
+		List<SimpleFieldSet> list = new ArrayList<>();
 		FileInputStream fis = null;
 		try {
 			fis = new FileInputStream(file);

@@ -449,8 +449,8 @@ public class IPDetectorPluginManager implements ForwardPortCallback {
 	 * (To detect new IP address)
 	 */ 
 	
-	private HashMap<FredPluginIPDetector,DetectorRunner> runners = new HashMap<FredPluginIPDetector,DetectorRunner>();
-	private HashSet<FredPluginIPDetector> failedRunners = new HashSet<FredPluginIPDetector>();
+	private HashMap<FredPluginIPDetector,DetectorRunner> runners = new HashMap<>();
+	private HashSet<FredPluginIPDetector> failedRunners = new HashSet<>();
 	private long lastDetectAttemptEndedTime;
 	private long firstTimeUrgent;
 	
@@ -667,7 +667,7 @@ public class IPDetectorPluginManager implements ForwardPortCallback {
 						if(!internal) {
 							// Real IP address
 							if(addressesConnected == null)
-								addressesConnected = new HashSet<InetAddress>();
+								addressesConnected = new HashSet<>();
 							addressesConnected.add(addr);
 							if(addressesConnected.size() > 2) {
 								// 3 connected addresses, lets assume we have connectivity.
@@ -729,7 +729,7 @@ public class IPDetectorPluginManager implements ForwardPortCallback {
 		public void realRun() {
 			if(logMINOR) Logger.minor(this, "Running plugin detection");
 			try {
-				List<DetectedIP> v = new ArrayList<DetectedIP>();
+				List<DetectedIP> v = new ArrayList<>();
 				DetectedIP[] detected = null;
 				try {
 					detected = plugin.getAddress();

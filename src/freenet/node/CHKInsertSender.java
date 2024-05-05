@@ -317,7 +317,7 @@ public final class CHKInsertSender extends BaseSender implements PrioRunnable, A
         this.prb = prb;
         this.fromStore = fromStore;
         this.startTime = System.currentTimeMillis();
-        this.backgroundTransfers = new ArrayList<BackgroundTransfer>();
+        this.backgroundTransfers = new ArrayList<>();
         this.forkOnCacheable = forkOnCacheable;
         this.preferInsert = preferInsert;
         this.ignoreLowBackoff = ignoreLowBackoff;

@@ -56,7 +56,7 @@ public enum EncryptedRandomAccessBufferType {
     private static final Map<Integer, EncryptedRandomAccessBufferType> byBitmask;
     
     static {
-        byBitmask = new HashMap<Integer, EncryptedRandomAccessBufferType>();
+        byBitmask = new HashMap<>();
         for(EncryptedRandomAccessBufferType type : values())
             byBitmask.put(type.bitmask, type);
     }

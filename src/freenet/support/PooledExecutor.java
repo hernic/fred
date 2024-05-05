@@ -41,7 +41,7 @@ public class PooledExecutor implements Executor {
 	public PooledExecutor() {
 		for(int i = 0; i < runningThreads.length; i++) {
 			/* runningThreads[i] = 0; */
-			waitingThreads[i] = new ArrayList<MyThread>();
+			waitingThreads[i] = new ArrayList<>();
 			threadCounter[i] = new AtomicLong();
 		}
 		waitingThreadsCount = 0;

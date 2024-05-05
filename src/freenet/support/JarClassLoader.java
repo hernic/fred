@@ -175,38 +175,38 @@ public class JarClassLoader extends ClassLoader implements Closeable {
 
 	@Override
 	protected Enumeration<URL> findResources(String name) {
-		return new Enumeration<URL>() {
-			private final Enumeration<JarEntry> jarFileEntries = tempJarFile.entries();
-			private URL nextElement = null;
+		return new Enumeration<>() {
+            private final Enumeration<JarEntry> jarFileEntries = tempJarFile.entries();
+            private URL nextElement = null;
 
-			@Override
-			public boolean hasMoreElements() {
-				if (nextElement != null) {
-					return true;
-				}
-				while ((nextElement == null) && jarFileEntries.hasMoreElements()) {
-					JarEntry jarEntry = jarFileEntries.nextElement();
-					if (jarEntry.getName().equals(name)) {
-						try {
-							nextElement = new URL("jar:" + new File(tempJarFile.getName()).toURI().toURL() + "!/" + name);
-						} catch (MalformedURLException e) {
-							/* ignore. */
-						}
-					}
-				}
-				return nextElement != null;
-			}
+            @Override
+            public boolean hasMoreElements() {
+                if (nextElement != null) {
+                    return true;
+                }
+                while ((nextElement == null) && jarFileEntries.hasMoreElements()) {
+                    JarEntry jarEntry = jarFileEntries.nextElement();
+                    if (jarEntry.getName().equals(name)) {
+                        try {
+                            nextElement = new URL("jar:" + new File(tempJarFile.getName()).toURI().toURL() + "!/" + name);
+                        } catch (MalformedURLException e) {
+                            /* ignore. */
+                        }
+                    }
+                }
+                return nextElement != null;
+            }
 
-			@Override
-			public URL nextElement() {
-				if (!hasMoreElements()) {
-					throw new NoSuchElementException();
-				}
-				URL elementToReturn = nextElement;
-				nextElement = null;
-				return elementToReturn;
-			}
-		};
+            @Override
+            public URL nextElement() {
+                if (!hasMoreElements()) {
+                    throw new NoSuchElementException();
+                }
+                URL elementToReturn = nextElement;
+                nextElement = null;
+                return elementToReturn;
+            }
+        };
 	}
 
 	/**
