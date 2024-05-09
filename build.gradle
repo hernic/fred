@@ -191,7 +191,7 @@ test {
     // no inner class
     include 'freenet/**/*Test.class'
     exclude 'freenet/**/*$*Test.class'
-    workingDir = sourceSets.test.output.classesDirs
+   // workingDir = sourceSets.test.output.classesDirs
     scanForTestClasses = false
     systemProperties += [
         "test.l10npath_test": "freenet/l10n/",
@@ -228,7 +228,7 @@ publishing {
 
 task copyRuntimeLibs(type: Copy) {
     into "${buildDir}/output/"
-    from configurations.runtime
+    from configurations.runtimeOnly
     from jar
 }
 copyRuntimeLibs.dependsOn jar
@@ -244,15 +244,15 @@ dependencies {
     compile "org.unbescape:unbescape:1.1.6.RELEASE"
     compile "org.slf4j:slf4j-api:1.7.25"
 
-    testCompile 'junit:junit:4.13.2'
-    testCompile "org.mockito:mockito-core:1.9.5"
-    testCompile "org.hamcrest:hamcrest:2.2"
-    testCompile "org.objenesis:objenesis:1.0"
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation "org.mockito:mockito-core:1.9.5"
+    testImplementation "org.hamcrest:hamcrest:2.2"
+    testImplementation "org.objenesis:objenesis:1.0"
 }
 
 dependencyVerification {
-    // testCompile includes all of compile deps... so let's include only these
-    includedConfigurations = [configurations.testCompile]
+    // testImplementation includes all of compile deps... so let's include only these
+    includedConfigurations = [configurations.testImplementation]
     verify = [
         'org.bouncycastle:bcprov-jdk15on:1c31e44e331d25e46d293b3e8ee2d07028a67db011e74cb2443285aed1d59c85',
         'net.java.dev.jna:jna-platform:f1d00c167d8921c6e23c626ef9f1c3ae0be473c95c68ffa012bc7ae55a87e2d6',
