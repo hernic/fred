@@ -13,7 +13,7 @@ configurations {
     compile
 }
 
-apply plugin: 'witness'
+// apply plugin: 'witness' -not gradle 8.5 compliant cf. : https://github.com/signalapp/gradle-witness (fork needed ?)
 apply plugin: 'java'
 apply plugin: 'maven-publish'
 
@@ -54,8 +54,8 @@ task buildInfo {
     }
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 21
+targetCompatibility = 21
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
@@ -74,11 +74,11 @@ task compileVersion (type: JavaCompile) {
             String line -> line.replaceAll("@custom@","${gitrev}")
         }
     }
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    sourceCompatibility = 21
+    targetCompatibility = 21
     source = "${buildDir}/build/tmp/compileVersion/"
     include "${version_src}"
-    classpath = files(sourceSets.main.compileClasspath, sourceSets.main.output.classesDir)
+    classpath = files(sourceSets.main.compileClasspath, sourceSets.main.output.classesDirs)
     destinationDir = file("${buildDir}/java/version/")
 }
 
@@ -142,11 +142,11 @@ gradle.addBuildListener(new BuildAdapter() {
 
 task copyResourcesToClasses2 {
     inputs.dir sourceSets.main.java.srcDirs
-    outputs.dir sourceSets.main.output.classesDir
+    outputs.dir sourceSets.main.output.classesDirs
     doLast {
         copy {
             from sourceSets.main.java.srcDirs
-            into sourceSets.main.output.classesDir
+            into sourceSets.main.output.classesDirs
             include 'freenet/l10n/*properties'
             include 'freenet/l10n/iso-*.tab'
             include 'freenet/clients/http/staticfiles/**'
@@ -155,7 +155,7 @@ task copyResourcesToClasses2 {
         }
         copy {
             from "${projectDir}/"
-            into sourceSets.main.output.classesDir
+            into sourceSets.main.output.classesDirs
             include 'dependencies.properties'
         }
     }
@@ -164,11 +164,11 @@ processResources.dependsOn copyResourcesToClasses2
 
 task copyTestResourcesToClasses2 {
     inputs.dir sourceSets.test.java.srcDirs
-    outputs.dir sourceSets.test.output.classesDir
+    outputs.dir sourceSets.test.output.classesDirs
     doLast {
         copy {
 	    from sourceSets.test.java.srcDirs
-	    into sourceSets.test.output.classesDir
+	    into sourceSets.test.output.classesDirs
             include 'freenet/client/filter/*/**'
             include 'freenet/crypt/ciphers/rijndael-gladman-test-data/**'
             include 'freenet/l10n/*properties'
@@ -191,7 +191,7 @@ test {
     // no inner class
     include 'freenet/**/*Test.class'
     exclude 'freenet/**/*$*Test.class'
-    workingDir = sourceSets.test.output.classesDir
+    workingDir = sourceSets.test.output.classesDirs
     scanForTestClasses = false
     systemProperties += [
         "test.l10npath_test": "freenet/l10n/",
