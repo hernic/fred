@@ -10,7 +10,7 @@ buildscript {
 
 configurations {
     provided
-    compile
+    implementation
 }
 
 // apply plugin: 'witness' -not gradle 8.5 compliant cf. : https://github.com/signalapp/gradle-witness (fork needed ?)
@@ -235,14 +235,14 @@ copyRuntimeLibs.dependsOn jar
 
 // In this section you declare the dependencies for your production and test code
 dependencies {
-    compile "org.bouncycastle:bcprov-jdk15on:1.59"
-    compile "net.java.dev.jna:jna:4.5.2"
-    compile "net.java.dev.jna:jna-platform:4.5.2"
-    compile "org.freenetproject:freenet-ext:29"
-    compile "io.pebbletemplates:pebble:3.1.5"
+    implementation "org.bouncycastle:bcprov-jdk15on:1.59"
+    implementation "net.java.dev.jna:jna:4.5.2"
+    implementation "net.java.dev.jna:jna-platform:4.5.2"
+    implementation "org.freenetproject:freenet-ext:29"
+    implementation "io.pebbletemplates:pebble:3.1.5"
     // dependencies of pebble
-    compile "org.unbescape:unbescape:1.1.6.RELEASE"
-    compile "org.slf4j:slf4j-api:1.7.25"
+    implementation "org.unbescape:unbescape:1.1.6.RELEASE"
+    implementation "org.slf4j:slf4j-api:1.7.25"
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation "org.mockito:mockito-core:1.9.5"
@@ -250,7 +250,8 @@ dependencies {
     testImplementation "org.objenesis:objenesis:1.0"
 }
 
-dependencyVerification {
+// looks as not working with new gradle
+/* dependencyVerification {
     // testImplementation includes all of compile deps... so let's include only these
     includedConfigurations = [configurations.testImplementation]
     verify = [
@@ -267,13 +268,13 @@ dependencyVerification {
         'org.unbescape:unbescape:597cf87d5b1a4f385b9d1cec974b7b483abb3ee85fc5b3f8b62af8e4bec95c2c',
         'org.slf4j:slf4j-api:18c4a0095d5c1da6b817592e767bb23d29dd2f560ad74df75ff3961dbde25b79'
     ]
-}
+}*/
 
 task tar(type: Tar) {
   description = "Build a source release, specifically excluding the build directories and gradle wrapper files"
   compression = Compression.BZIP2
 
-  baseName = "freenet-sources"
+  archivesBaseName = "freenet-sources"
 
   from(project.rootDir) {
     exclude '**/build'
@@ -281,20 +282,22 @@ task tar(type: Tar) {
     exclude '.gradle'
   }
 
-  into(baseName)
+  into(archivesBaseName)
 
   preserveFileTimestamps = true
   reproducibleFileOrder = true
 
   // Set destination directory.
-  destinationDir = file("${project.buildDir}")
+    getDestinationDirectory().set(file("${project.buildDir}"))
 
-  archiveName = "${baseName}.tgz"
+  archivesBaseName = "${archivesBaseName}.tgz"
   doLast { // generate md5 checksum
-    ant.checksum file:"$destinationDir/$archiveName"
+    ant.checksum file:"$destinationDir/$archivesBaseName"
   }
 }
 
-javadoc << {
-    failOnError false
+javadoc {
+    doLast {
+        failOnError false
+    }
 }
