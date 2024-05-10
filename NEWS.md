@@ -1,5 +1,195 @@
 next:
 
+- new theme: sky-dark-static
+- m3u-player: skip broken files
+- m3u-player: only inline the m3u player if the page contains media tags
+- new firsttime wizard (single-step joining with clearer defaults)
+- Client getter honor max size argument
+- 
+
+1495:
+
+- finally merged the HashingAPI by unixninja92, a GSoC project that had gotten lost in the pull requests. This provides an easy and well-tested way to create and verify different types of Hashes from byte arrays, including Sha256 and TigerTree. https://github.com/freenet/fred/pull/258
+- Add web+freenet and ext+freenet as supported schemas to support extensions. Thanks to TheSeeker
+- upgrade unit tests to junit4, thanks to vwoodzell!
+- Eleriseth pending keys merged (performance)
+- healing size increased (better lifetime for popular files)
+- CSS: enable sticky — thanks to Spider Admin
+- CSS: enable transition and word-wrap — thanks to naejadu, thanks to vwoodzell for the review!
+- re-organize default bookmarks: first section has "starting points", thanks to vwoodzell for the review!
+- old announcement fixes by toad finally merged
+
+1494:
+
+- Show a user alert (once every Freenet update) if the datastore is
+  below 10% of available space with a link to the store size wizard page
+  to make it easy to increase the store ― thanks to Trivuele
+- Do not store blocks in the cache, if they are eligible for the store
+  (should increase usable cache size)   thanks to Trivuele
+- m3u-player: more robust sizes, do not use overlay for audio. This
+  finally enables convenient Samizdat Radio
+- randomize pitch black defense times and wait at least 12 hours
+  between pitch black mitigations to prevent timing attacks
+- bandwidth settings: parse bit suffix correctly
+- improve /imagecreator/   thanks to Oleh from Redwerk
+- Disable write local to datastore functionality when opennet is
+  enabled; it can be useful on a small darknet, but on opennet it
+  makes it easier to find downloaders.   thanks to Trivuele
+- make it easier to build fred without network access   thanks to Trivuele
+- fix build with modern Java: add opens jvmargs on java 17
+- fix: a FOAF mitigation wasn t operational, because it lacked a
+  conversion to percent.   thanks to freedom-of-depression
+- remove Frost on ChatForumsToadlet from non-updated translations
+  (removed 2019 from the original english)
+- fix parts of the German translation
+
+
+1493:
+
+- Update the wrapper files in dependencies.properties to 3.5.30
+  This change sets a consistent wrapper-version for Windows, *Nix, and
+  also OSX, thanks to operhiem1 for the review
+- Pseudonymous people found found a bug in our splitfile inserter that
+  TheSeeker tracked down to its source. It threw an exception if the
+  checksum was exactly [0,0,0,0], thanks to operhiem1 for the review
+- Update default bookmarks: Replace inactive indexes, add Shoeshop,
+  show active sites first. Thanks to AC4BB21B for the review!
+- Fix FreenetURI intern() to not forget edition of USK — thanks to
+  debbiedub!
+- Replace Pointer.SIZE with Native.POINTER_SIZE for JNA 5.x — thanks
+  to Leo3418 and Bombe
+- fix peer scaling for very fast peers: 
+  Very fast nodes have more peers to fix a conceptual mistake
+  (did not take the aggregated bandwidth limit of the peers into account). 
+  Thanks to TheSeeker for the review!
+- more resilient noderef parsing for easier friend-to-friend connections
+  try replacing spaces by newlines in noderefs when parsing fails
+- Accept FreenetURI in add peer field; only try regular url on failure
+  — thanks to desyncr for the review
+- Add warning about surveillance through voice recognition tech
+- Updater changes to add Java 17 support for existing nodes to
+  wrapper.conf (required module opens for Java 17 to wrapper.conf)
+  during the following update (to 1494)
+- Installer changes: 
+  - Java 17 support
+  - increase default datastore size to 100GiB, because SSDs are much
+    faster today
+  - Set standard thread limit to 1000
+  - decrease default thread stack size for reduced memory usage
+    (512KiB)
+  - Increase default bandwidth to 32KiB/s. This should improve
+    performance for new nodes where UPnP does not give the speed.
+    thanks to operhiem1 for the review
+  - add output of filtered file to the OggFilterTest
+
+
+1492:
+
+- Fred:
+
+- The diagnostics component provides thread runtime statistics. Thanks to DC*.
+  https://github.com/freenet/fred/pull/727
+
+- The multi-node test to show that the mitigation against the pitch
+  black attack works.
+  https://github.com/freenet/fred/pull/736
+
+- The m3u-player for video on demand over Freenet now prevents most
+  visual flickering.
+  https://github.com/freenet/fred/pull/734
+
+- Clickable labels for checkboxes. Thanks to AC4BB21B.
+  https://github.com/freenet/fred/pull/741
+
+- Fix: skip in support.io.SkipShieldingInputStream must return
+  non-negative. Thanks to dennisnez.
+  https://github.com/freenet/fred/pull/737
+
+- Fix: NodeConfig was reading a particular config from default on every
+  start up. Thanks to desyncr.
+  https://github.com/freenet/fred/pull/739
+
+- OpenJDK 16+ compat: add wrapper.conf argument to allow access to
+  internal openjdk modules.
+  https://github.com/freenet/fred/pull/740
+
+- Fix: Correct "current size" option in Wizard => datastore size. Thanks to
+AC4BB21B.
+  https://github.com/freenet/fred/pull/742
+
+- Plugins:
+
+- KeyUtils:
+  Fix API call to allow compiling, and
+   Fix extra bytes display for composed SSK.
+  both thanks to TheSeeker.
+  https://github.com/freenet/plugin-KeyUtils/pull/17
+  https://github.com/freenet/plugin-KeyUtils/pull/16
+
+- Library:
+  search with unchecked boxes thanks to redwerk
+  https://github.com/freenet/plugin-Library/pull/14 -
+
+  custom index docname thanks to TheSeeker
+  https://github.com/freenet/plugin-Library/pull/18
+
+- Spider:
+  Fix writing to the bucket and Replace SortedIntSet thanks to redwerks
+  https://github.com/freenet/plugin-Spider/pull/6
+
+  Fix build thanks to Juiceman
+  https://github.com/freenet/plugin-Spider/pull/5
+
+- FlogHelper
+  Add new media tags in tool menu: audio and video thanks to
+  AlexandreRio
+  https://github.com/freenet/plugin-FlogHelper/pull/19
+  (you can simply set an uploaded m3u file as as source of a video
+   and it will show up on your flog as video on demand)
+
+related: nextgens fixed our website build (Thank you!), so we can release
+there again. I polished our theme and the messaging on the index-page.
+https://freenetproject.org/
+
+
+1491:
+
+
+- disable pitch black defense if swapping is disabled because the node uses opennet
+  this should resolve problems to the network structure
+  introduced during the pitch-black fix because
+  opennet nodes started swapping when they had network-issues.
+  Sorry for that :-(
+- start pitch black defense 10 minutes after startup, not 1 minute after startup
+  further reduce the probability of stray swapping
+- fix streaming: deal with proxies providing a http node via https
+  streaming should now work over proxies.
+- m3u compability for mobile devices - thanks to DC*
+  some mobile browsers answer the query "supports m3u" with "maybe" O_o
+- add OpenBSD support thanks to jv@D7b92AQB2664AkrR
+- Add compatibility method for plugins (SCGIPublisher needs it)
+- recover constructor for compatibility with plugins
+- Fixed several unused variables issues - thanks to Jan Gerritsen
+- Fix label for logged attribute RoutingDisabled - thanks to Jan Gerritsen
+
+
+1490:
+
+- streaming in the browser,
+- mitigating the pitch black attack, and
+- providing the windows-installer from the node again.
+
+- inject vanilla Javascript m3u-player into Freesites
+  to get in-browser playlist streaming (with config to disable if needed).
+  Thanks to nextgens and desyncr for the review!
+- mitigate the pitch black attack following
+  https://www.mail-archive.com/devl@freenetproject.org/msg55182.html
+  Thanks to nextgens and x for the review!
+- triple the UOM transfer max sizes
+  so the windows-installer provided by nodes gets updated again.
+  Thanks to desyncr for the review!
+
+
 1489:
 
 - Add m3u support with mp3, ogg, oga, ogv, and flac. Thanks to Bombe for reviewing!
