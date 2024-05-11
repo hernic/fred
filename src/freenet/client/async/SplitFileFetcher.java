@@ -21,9 +21,11 @@ import freenet.keys.ClientCHKBlock;
 import freenet.keys.FreenetURI;
 import freenet.node.BaseSendableGet;
 import freenet.support.Logger;
+import freenet.support.api.Bucket;
 import freenet.support.api.LockableRandomAccessBuffer;
 import freenet.support.compress.Compressor.COMPRESSOR_TYPE;
 import freenet.support.io.BucketTools;
+import freenet.support.io.FileUtil;
 import freenet.support.io.InsufficientDiskSpaceException;
 import freenet.support.io.PooledFileRandomAccessBuffer;
 import freenet.support.io.ResumeFailedException;
@@ -130,7 +132,7 @@ public class SplitFileFetcher implements ClientGetState, SplitFileFetcherStorage
                 File targetFile = fileCallback.getCompletionFile();
                 if(targetFile != null) {
                     callbackCompleteViaTruncation = fileCallback;
-                    fileCompleteViaTruncation = File.createTempFile(targetFile.getName(), ".freenet-tmp", targetFile.getParentFile());
+                    fileCompleteViaTruncation = FileUtil.createTempFile(targetFile.getName(), ".freenet-tmp", targetFile.getParentFile());
                     // Storage must actually create the RAF since it knows the length.
                 } else {
                     callbackCompleteViaTruncation = null;
@@ -296,7 +298,10 @@ public class SplitFileFetcher implements ClientGetState, SplitFileFetcherStorage
     @Override
     public void queueHeal(byte[] data, byte[] cryptoKey, byte cryptoAlgorithm) {
         try {
-            context.healingQueue.queue(BucketTools.makeImmutableBucket(context.tempBucketFactory, data), cryptoKey, cryptoAlgorithm, context);
+            Bucket dataBucket = BucketTools.makeImmutableBucket(
+                context.tempBucketFactory,
+                data);
+            context.healingQueue.queue(dataBucket, cryptoKey, cryptoAlgorithm, context);
         } catch (IOException e) {
             // Nothing to be done, but need to log the error.
             Logger.error(this, "I/O error, failed to queue healing block: "+e, e);

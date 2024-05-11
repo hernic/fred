@@ -71,7 +71,7 @@ public class DroppedOldPeersUserAlert implements UserAlert {
 
     @Override
     public String getText() {
-        StringBuffer longErrorText = new StringBuffer();
+        StringBuilder longErrorText = new StringBuilder();
         longErrorText.append(getErrorIntro());
         longErrorText.append('\n');
         longErrorText.append(l10n("droppingOldFriendList"));

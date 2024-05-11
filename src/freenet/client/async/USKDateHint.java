@@ -46,7 +46,7 @@ public class USKDateHint {
 	}
 	
 	public String get(Type t) {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(cal.get(Calendar.YEAR));
 		if(t == Type.YEAR) return sb.toString();
 		if(t == Type.WEEK) {

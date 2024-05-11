@@ -25,7 +25,7 @@ public class IOStatisticCollector {
 	static boolean ENABLE_PER_ADDRESS_TRACKING = false;
 	
 	public IOStatisticCollector() {
-		targets = new LinkedHashMap<String, StatisticEntry>();
+		targets = new LinkedHashMap<>();
 		// TODO: only for testing!!!!
 		// This should only happen once
 		//SNMPAgent.create();
@@ -52,12 +52,12 @@ public class IOStatisticCollector {
 				entry = new StatisticEntry();
 				targets.put(key, entry);
 			}
-			entry.addData((inbytes>0)?inbytes:0, (outbytes>0)?outbytes:0);
+			entry.addData(Math.max(inbytes, 0), Math.max(outbytes, 0));
 		}
 		if(!isLocal) {
 			synchronized(this) {
-				totalbytesout += (outbytes>0)?outbytes:0;
-				totalbytesin += (inbytes>0)?inbytes:0;
+				totalbytesout += Math.max(outbytes, 0);
+				totalbytesin += Math.max(inbytes, 0);
 				if(logDEBUG)
 					Logger.debug(IOStatisticCollector.class, "Add("+addr+":"+port+ ',' +inbytes+ ',' +outbytes+" -> "+totalbytesin+" : "+totalbytesout);
 			}
@@ -147,11 +147,10 @@ public class IOStatisticCollector {
 			lastrotate = now;
 			Object[] keys = targets.keySet().toArray();
 			if(keys == null) return; // Why aren't we iterating there ?
-			for(int i = 0 ; i < keys.length ; i++) {
-				Object key = keys[i];
-				if (targets.get(key).rotate() == false)
-					targets.remove(key);
-			}
+            for (Object key : keys) {
+                if (targets.get(key).rotate() == false)
+                    targets.remove(key);
+            }
 			// FIXME: debugging
 			//_dumpInfo();
 		}

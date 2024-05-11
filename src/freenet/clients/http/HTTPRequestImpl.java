@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -205,12 +206,7 @@ public class HTTPRequestImpl implements HTTPRequest {
 			for (Entry<String, List<String>> parameterValues : parameters.entrySet()) {
 				List<String> values = parameterValues.getValue();
 				String value = values.get(values.size() - 1);
-				byte[] buf;
-				try {
-					buf = value.getBytes("UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					throw new Error("Impossible: JVM doesn't support UTF-8: " + e, e);
-				} // FIXME some other encoding?
+				byte[] buf = value.getBytes(StandardCharsets.UTF_8);
 				RandomAccessBucket b = new SimpleReadOnlyArrayBucket(buf);
 				parts.put(parameterValues.getKey(), b);
 				if(logMINOR)
@@ -448,13 +444,13 @@ public class HTTPRequestImpl implements HTTPRequest {
 
 		// try parsing all values and put the valid Integers in a new list
 		List<Integer> intValueList = new ArrayList<Integer>();
-		for (int i = 0; i < valueList.size(); i++) {
-			try {
-				intValueList.add(Integer.valueOf(valueList.get(i)));
-			} catch (Exception e) {
-				// ignore invalid parameter values
-			}
-		}
+        for (String s : valueList) {
+            try {
+                intValueList.add(Integer.valueOf(s));
+            } catch (Exception e) {
+                // ignore invalid parameter values
+            }
+        }
 
 		// convert the valid Integers to an array of ints
 		int[] values = new int[intValueList.size()];
@@ -492,7 +488,7 @@ public class HTTPRequestImpl implements HTTPRequest {
 				if(data.size() > 1024 * 1024)
 					throw new IOException("Too big");
 				byte[] buf = BucketTools.toByteArray(data);
-				String s = new String(buf, "us-ascii");
+				String s = new String(buf, StandardCharsets.US_ASCII);
 				parseRequestParameters(s, true, true);
 			}
 			if(!ctypeparts[0].trim().equalsIgnoreCase("multipart/form-data") || (ctypeparts.length < 2))
@@ -552,19 +548,19 @@ public class HTTPRequestImpl implements HTTPRequest {
 							continue;
 						String[] valueparts = lineparts[1].split(";");
 
-						for(int i = 0; i < valueparts.length; i++) {
-							String[] subparts = valueparts[i].split("=");
-							if(subparts.length != 2)
-								continue;
-							String fieldname = subparts[0].trim();
-							String value = subparts[1].trim();
-							if(value.startsWith("\"") && value.endsWith("\""))
-								value = value.substring(1, value.length() - 1);
-							if(fieldname.equalsIgnoreCase("name"))
-								name = value;
-							else if(fieldname.equalsIgnoreCase("filename"))
-								filename = value;
-						}
+                        for (String valuepart : valueparts) {
+                            String[] subparts = valuepart.split("=");
+                            if (subparts.length != 2)
+                                continue;
+                            String fieldname = subparts[0].trim();
+                            String value = subparts[1].trim();
+                            if (value.startsWith("\"") && value.endsWith("\""))
+                                value = value.substring(1, value.length() - 1);
+                            if (fieldname.equalsIgnoreCase("name"))
+                                name = value;
+                            else if (fieldname.equalsIgnoreCase("filename"))
+                                filename = value;
+                        }
 					}
 					else if(hdrname.equalsIgnoreCase("Content-Type")) {
 						contentType = lineparts[1].trim();
@@ -587,7 +583,7 @@ public class HTTPRequestImpl implements HTTPRequest {
 				bucketos = filedata.getOutputStream();
 				// buffer characters that match the boundary so far
 			// FIXME use whatever charset was used
-				byte[] bbound = boundary.getBytes("UTF-8"); // ISO-8859-1? boundary should be in US-ASCII
+				byte[] bbound = boundary.getBytes(StandardCharsets.UTF_8); // ISO-8859-1? boundary should be in US-ASCII
 				int offset = 0;
 				while((is.available() > 0) && (offset < bbound.length)) {
 					byte b = (byte) is.read();
@@ -658,11 +654,7 @@ public class HTTPRequestImpl implements HTTPRequest {
 	@Override
 	@Deprecated
 	public String getPartAsString(String name, int maxlength) {
-		try {
-			return new String(getPartAsBytes(name, maxlength), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new Error("Impossible: JVM doesn't support UTF-8: " + e, e);
-		}
+		return new String(getPartAsBytes(name, maxlength), StandardCharsets.UTF_8);
 	}
 	
 	@Override
@@ -687,11 +679,7 @@ public class HTTPRequestImpl implements HTTPRequest {
 	}
 	
 	private String getPartAsLimitedString(Bucket part, int maxLength) {
-		try {
-			return new String(getPartAsLimitedBytes(part, maxLength), "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new Error("Impossible: JVM doesn't support UTF-8: " + e, e);
-		}
+		return new String(getPartAsLimitedBytes(part, maxLength), StandardCharsets.UTF_8);
 	}
 
 	/* (non-Javadoc)
@@ -888,7 +876,7 @@ public class HTTPRequestImpl implements HTTPRequest {
 	@Override
 	public boolean isIncognito() {
 		if(isParameterSet("incognito"))
-			return Boolean.valueOf(getParam("incognito"));
+			return Boolean.parseBoolean(getParam("incognito"));
 		return false;
 	}
 

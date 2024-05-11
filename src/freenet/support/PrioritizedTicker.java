@@ -53,8 +53,8 @@ public class PrioritizedTicker implements Ticker, Runnable {
 	
 	public PrioritizedTicker(Executor executor, int portNumber) {
 		this.executor = executor;
-		timedJobsByTime = new TreeMap<Long, Object>();
-		timedJobsQueued = new HashMap<Job, Long>();
+		timedJobsByTime = new TreeMap<>();
+		timedJobsQueued = new HashMap<>();
 		myThread = new NativeThread(this, "Ticker thread for " + portNumber, NativeThread.MAX_PRIORITY, false);
 		myThread.setDaemon(true);
 	}
@@ -90,9 +90,9 @@ public class PrioritizedTicker implements Ticker, Runnable {
 		synchronized(timedJobsByTime) {
 			while(!timedJobsByTime.isEmpty()) {
 				Long tRun = timedJobsByTime.firstKey();
-				if(tRun.longValue() <= now) {
+				if(tRun <= now) {
 					if(jobsToRun == null)
-						jobsToRun = new ArrayList<Job>();
+						jobsToRun = new ArrayList<>();
 					Object o = timedJobsByTime.remove(tRun);
 					if(o instanceof Job[]) {
 						for(Job r: (Job[]) o) {
@@ -105,7 +105,7 @@ public class PrioritizedTicker implements Ticker, Runnable {
 						timedJobsQueued.remove(r);
 					}
 				} else {
-					sleepTime = Math.min(sleepTime, tRun.longValue() - now);
+					sleepTime = Math.min(sleepTime, tRun - now);
 					break;
 				}
 			}

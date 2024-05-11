@@ -1,6 +1,7 @@
 package freenet.crypt;
 
-import java.io.UnsupportedEncodingException;
+import static org.junit.Assert.*;
+
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
@@ -9,24 +10,26 @@ import java.security.PublicKey;
 import java.security.Security;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.Before;
+import org.junit.Test;
 
 import freenet.crypt.ECDH.Curves;
-import junit.framework.TestCase;
 
-public class ECDHTest extends TestCase {
+public class ECDHTest {
     
     ECDH.Curves curveToTest;
     ECDH alice;
     ECDH bob;
     
-    protected void setUp() throws Exception {
-        super.setUp();
+    @Before
+    public void setUp() throws Exception {
         Security.addProvider(new BouncyCastleProvider());
         curveToTest = Curves.P256;
         alice = new ECDH(curveToTest);
         bob = new ECDH(curveToTest);
     }
 
+    @Test
     public void testGetAgreedSecret() throws InvalidKeyException, IllegalStateException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
         byte[] aliceS = alice.getAgreedSecret(bob.getPublicKey());
         byte[] bobS = bob.getAgreedSecret(alice.getPublicKey());
@@ -37,6 +40,7 @@ public class ECDHTest extends TestCase {
         assertEquals(bobS.length, curveToTest.derivedSecretSize);
     }
 
+    @Test
     public void testGetPublicKey() {
         PublicKey aliceP = alice.getPublicKey();
         PublicKey bobP = bob.getPublicKey();
@@ -67,9 +71,5 @@ public class ECDHTest extends TestCase {
     
     public static String toHex(byte[] arg) {
         return String.format("%040x", new BigInteger(1,arg));
-    }
-    
-    public static String toHex(String arg) throws UnsupportedEncodingException {
-        return toHex(arg.getBytes("utf-8"));
     }
 }

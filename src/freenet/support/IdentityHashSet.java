@@ -7,7 +7,7 @@ import java.util.Set;
 
 public class IdentityHashSet<T> implements Set<T> {
 	
-	private final IdentityHashMap<T,Object> map = new IdentityHashMap<T,Object>();
+	private final IdentityHashMap<T,Object> map = new IdentityHashMap<>();
 	
 	@Override
 	public boolean add(T e) {

@@ -31,7 +31,7 @@ import freenet.support.io.FileUtil;
  * Note : do not use this class *as is*, use NodeL10n.getBase() or
  * PluginL10n.getBase().
  *
- * Note : this class also supports using/saving/editing overriden translations.
+ * Note : this class also supports using/saving/editing overridden translations.
  * @author Florent Daigni&egrave;re &lt;nextgens@freenetproject.org&gt;
  * @author Artefact2
  */
@@ -133,13 +133,13 @@ public class BaseL10n {
 		public static String[] valuesWithFullNames() {
 			LANGUAGE[] allValues = values();
 			ArrayList<String> result = new ArrayList<String>(allValues.length);
-			for (int i = 0; i < allValues.length; i++) {
-				// We will return the full names sorted alphabetically. To ensure that the user
-				// notices the special "UNLISTED" language code, we add it to the end of the list
-				// after sorting, so now we skip it.
-				if(allValues[i] != UNLISTED)
-					result.add(allValues[i].fullName);
-			}
+            for (LANGUAGE allValue : allValues) {
+                // We will return the full names sorted alphabetically. To ensure that the user
+                // notices the special "UNLISTED" language code, we add it to the end of the list
+                // after sorting, so now we skip it.
+                if (allValue != UNLISTED)
+                    result.add(allValue.fullName);
+            }
 
 			Collections.sort(result);
 			result.add(UNLISTED.fullName);
@@ -246,7 +246,7 @@ public class BaseL10n {
 	 * Note : you shouldn't have to run this yourself. Use PluginL10n or NodeL10n.
 	 * @param l10nFilesBasePath Base path of the l10n files, ex. "com/mycorp/myproject/l10n"
 	 * @param l10nFilesMask Mask of the l10n files, ex. "messages_${lang}.l10n"
-	 * @param l10nOverrideFilesMask Same as l10nFilesMask, but for overriden messages.
+	 * @param l10nOverrideFilesMask Same as l10nFilesMask, but for overridden messages.
 	 * @param lang Language to use.
 	 * @param cl ClassLoader to use.
 	 */
@@ -376,7 +376,7 @@ public class BaseL10n {
 	}
 
 	/**
-	 * Returns true if a key is overriden.
+	 * Returns true if a key is overridden.
 	 * @param key Key to check override status
 	 * @return boolean
 	 */
@@ -402,7 +402,7 @@ public class BaseL10n {
 
 		// If there is no need to keep it in the override, remove it...
 		// unless the original/default is the same as the translation
-		if ("".equals(value) || (currentTranslation != null && value.equals(this.currentTranslation.get(key)))) {
+		if (value.isEmpty() || (currentTranslation != null && value.equals(this.currentTranslation.get(key)))) {
 			this.translationOverride.removeValue(key);
 		} else {
 			value = value.replaceAll("(\r|\n|\t)+", "");
@@ -417,7 +417,7 @@ public class BaseL10n {
 	}
 
 	/**
-	 * Save the SimpleFieldSet of overriden keys in a file.
+	 * Save the SimpleFieldSet of overridden keys in a file.
 	 */
 	private void saveTranslationFile() {
 		FileOutputStream fos = null;
@@ -425,7 +425,7 @@ public class BaseL10n {
 
 		try {
 			// We don't set deleteOnExit on it : if the save operation fails, we want a backup
-			File tempFile = File.createTempFile(finalFile.getName(), ".bak", finalFile.getParentFile());;
+			File tempFile = File.createTempFile(finalFile.getName(), ".bak", finalFile.getParentFile());
 			Logger.minor(this.getClass(), "The temporary filename is : " + tempFile);
 
 			fos = new FileOutputStream(tempFile);
@@ -451,7 +451,7 @@ public class BaseL10n {
 	}
 
 	/**
-	 * Get a copy of the currently used SimpleFieldSet (overriden messages).
+	 * Get a copy of the currently used SimpleFieldSet (overridden messages).
 	 * @return SimpleFieldSet
 	 */
 	public SimpleFieldSet getOverrideForCurrentLanguageTranslation() {
@@ -476,6 +476,17 @@ public class BaseL10n {
 	 */
 	public String getString(String key) {
         return getStrings(key).iterator().next();
+	}
+
+	/**
+	 * Get a localized string. Return "" (empty string) if it doesn't exist.
+	 * @param key Key to search for.
+	 * @param replacementValue Replacement value for all ${*}.
+	 * @return String
+	 */
+	public String getString(String key, String replacementValue) {
+		String string = getStrings(key).iterator().next();
+		return string.replaceAll("\\$\\{.*}", replacementValue);
 	}
 
 	/**
@@ -581,7 +592,7 @@ public class BaseL10n {
 	/**
 	 * Get the default value for a key.
 	 * @param key Key to search for.
-	 * @return String
+	 * @return the matching string in the fallback language (English); the raw key if there is no entry for it in the fallback language.
 	 */
 	public String getDefaultString(String key) {
         return getStrings(key, FallbackState.FALLBACK_LANG).iterator().next();
@@ -590,7 +601,7 @@ public class BaseL10n {
 	/**
 	 * Get the default value for a key.
 	 * @param key Key to search for.
-	 * @return String
+	 * @return the matching string in the fallback language (English); the raw key if there is no entry for it in the fallback language. Patterns are replaced by the matching values.
 	 */
 	public String getDefaultString(String key, String[] patterns, String[] values) {
 		assert (patterns.length == values.length);
@@ -761,7 +772,7 @@ public class BaseL10n {
     private void addHTMLSubstitutions(HTMLNode node, String value,
             String[] patterns, HTMLNode[] values) throws L10nParseException {
 		int x;
-		while(!value.equals("") && (x = value.indexOf("${")) != -1) {
+		while(!value.isEmpty() && (x = value.indexOf("${")) != -1) {
 			String before = value.substring(0, x);
 			if(before.length() > 0)
 				node.addChild("#", before);
@@ -806,7 +817,7 @@ public class BaseL10n {
 				value = rest;
 			}
 		}
-		if(!value.equals(""))
+		if(!value.isEmpty())
 			node.addChild("#", value);
 	}
 	

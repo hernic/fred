@@ -29,8 +29,8 @@ public class NewPacketFormatKeyContext {
 	public int watchListPointer = 0;
 	public int watchListOffset = 0;
 	
-	private final TreeMap<Integer, Long> acks = new TreeMap<Integer, Long>();
-	private final HashMap<Integer, SentPacket> sentPackets = new HashMap<Integer, SentPacket>();
+	private final TreeMap<Integer, Long> acks = new TreeMap<>();
+	private final HashMap<Integer, SentPacket> sentPackets = new HashMap<>();
 	/** Keep this many sent times for lost packets, so we can compute an accurate round trip time if
 	 * they are acked after we had decided they were lost. */
 	private static final int MAX_LOST_SENT_TIMES = 128;
@@ -200,7 +200,7 @@ public class NewPacketFormatKeyContext {
 					mustSend = true;
 				if(moved == null) {
 					// FIXME some more memory efficient representation, since this will normally be very small?
-					moved = new HashMap<Integer, Long>();
+					moved = new HashMap<>();
 				}
 				moved.put(ack, entry.getValue());
 				++numAcks;

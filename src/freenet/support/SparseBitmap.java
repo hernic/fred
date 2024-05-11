@@ -12,11 +12,11 @@ public class SparseBitmap implements Iterable<int[]> {
 	private final TreeSet<Range> ranges;
 
 	public SparseBitmap() {
-		ranges = new TreeSet<Range>(new RangeComparator());
+		ranges = new TreeSet<>(new RangeComparator());
 	}
 
 	public SparseBitmap(SparseBitmap original) {
-		ranges = new TreeSet<Range>(new RangeComparator());
+		ranges = new TreeSet<>(new RangeComparator());
 
 		for(int[] range : original) {
 			add(range[0], range[1]);
@@ -71,7 +71,7 @@ public class SparseBitmap implements Iterable<int[]> {
 			throw new IllegalArgumentException("Removing bad range. Start: " + start + ", end: " + end);
 		}
 
-		List<Range> toAdd = new ArrayList<Range>();
+		List<Range> toAdd = new ArrayList<>();
 
 		Iterator<Range> it = overlaps(start, end, false).iterator();
 		while (it.hasNext()) {
@@ -110,7 +110,7 @@ public class SparseBitmap implements Iterable<int[]> {
 
 	@Override
 	public String toString() {
-		StringBuffer s = new StringBuffer();
+		StringBuilder s = new StringBuilder();
 		for(int[] range : this) {
 			if(s.length() != 0) s.append(", ");
 			s.append(range[0] + "->" + range[1]);

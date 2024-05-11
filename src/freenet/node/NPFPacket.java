@@ -31,12 +31,12 @@ class NPFPacket {
 	}
 
 	private int sequenceNumber;
-	private final SortedSet<Integer> acks = new TreeSet<Integer>();
-	private final List<MessageFragment> fragments = new ArrayList<MessageFragment>();
+	private final SortedSet<Integer> acks = new TreeSet<>();
+	private final List<MessageFragment> fragments = new ArrayList<>();
 	/** Messages that are specific to a single packet and can be happily lost if it is lost. 
 	 * They must be processed before the rest of the messages.
 	 * With early versions, these might be bogus, so be careful parsing them. */
-	private final List<byte[]> lossyMessages = new LinkedList<byte[]>();
+	private final List<byte[]> lossyMessages = new LinkedList<>();
 	private boolean error;
 	private int length = 5; //Sequence number (4), numAcks(1)
 	private int ackRangeCount = 0;

@@ -6,11 +6,14 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
+import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.Provider;
 import java.security.Security;
 import java.security.Signature;
 
 import javax.crypto.KeyAgreement;
+import javax.crypto.KeyGenerator;
 
 import freenet.support.Logger;
 import freenet.support.io.Closer;
@@ -35,9 +38,20 @@ public class JceLoader {
 		if (checkUse("use.NSS","false")) {
 			try {
 				p = (new NSSLoader()).load(checkUse("prefer.NSS"));
+				try{
+				    KeyGenerator kgen = KeyGenerator.getInstance("AES", "SunPKCS11-NSS");
+				    kgen.init(256);
+				} catch (GeneralSecurityException e) {
+				    final String msg = "Error with SunPKCS11-NSS. "
+				            + "Unlimited policy file not installed.";
+				    Logger.warning(NSSLoader.class, msg, e);
+				    System.out.println(msg);
+				}
 			} catch(Throwable e) {
 				// FIXME what about Windows/MacOSX/etc?
-				final String msg = "Unable to load SunPKCS11-NSScrypto provider. This is NOT fatal error, Freenet will work, but some performance degradation possible. Consider installing libnss3 package.";
+				final String msg = "Unable to load SunPKCS11-NSScrypto provider. "
+				        + "This is NOT fatal error, Freenet will work, but some performance "
+				        + "degradation possible. Consider installing libnss3 package.";
 				Logger.warning(NSSLoader.class, msg, e);
 			}
 		}
@@ -55,8 +69,19 @@ public class JceLoader {
 		}
 		BouncyCastle = p;
 		// optional
+		if (checkUse("use.SunJCE")) {
+		    try{
+		        KeyGenerator kgen = KeyGenerator.getInstance("AES", "SunJCE");
+		        kgen.init(256);
+		    }
+		    catch(Throwable e) {
+		        Logger.warning(NSSLoader.class, "Error with SunJCE. Unlimited policy file not installed.", e);
+		    }
+		    SunJCE = Security.getProvider("SunJCE");
+		}
+		else SunJCE = null;
+
 		SUN = checkUse("use.SUN") ? Security.getProvider("SUN") : null;
-		SunJCE = checkUse("use.SunJCE") ? Security.getProvider("SunJCE") : null;
 	}
 	static private class BouncyCastleLoader {
 		private BouncyCastleLoader() {}
@@ -64,7 +89,8 @@ public class JceLoader {
 			Provider p = Security.getProvider("BC");
 			if (p == null) {
 				try {
-					Class<?> c = Class.forName("org.bouncycastle.jce.provider.BouncyCastleProvider");
+					Class<?> c = 
+					        Class.forName("org.bouncycastle.jce.provider.BouncyCastleProvider");
 					p = (Provider)c.newInstance();
 					Security.addProvider(p);
 				} catch(Throwable e) {
@@ -101,7 +127,7 @@ public class JceLoader {
 				try {
 					// More robust than PrintWriter(file), which can hang on out of disk space.
 					os = new FileOutputStream(nssFile);
-					OutputStreamWriter osw = new OutputStreamWriter(os, "ISO-8859-1");
+					OutputStreamWriter osw = new OutputStreamWriter(os, StandardCharsets.ISO_8859_1);
 					BufferedWriter bw = new BufferedWriter(osw);
 					bw.write("name=NSScrypto\n");
 					bw.write("nssDbMode=noDb\n");

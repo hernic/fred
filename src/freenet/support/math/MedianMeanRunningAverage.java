@@ -18,7 +18,7 @@ public final class MedianMeanRunningAverage implements RunningAverage, Cloneable
          *
          */
         public MedianMeanRunningAverage() {
-		reports = new ArrayList<Double>();
+		reports = new ArrayList<>();
 		mean = new TrivialRunningAverage();
 	}
 
@@ -28,7 +28,7 @@ public final class MedianMeanRunningAverage implements RunningAverage, Cloneable
          */
         public MedianMeanRunningAverage(MedianMeanRunningAverage average) {
 		this.mean = new TrivialRunningAverage(average.mean);
-		this.reports = new ArrayList<Double>();
+		this.reports = new ArrayList<>();
 		reports.addAll(average.reports);
 	}
 

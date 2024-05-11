@@ -4,6 +4,7 @@
 package freenet.node;
 
 import static java.util.concurrent.TimeUnit.DAYS;
+import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -14,13 +15,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.text.DateFormat;
 import java.time.Clock;
-import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -71,7 +74,7 @@ public class LocationManager implements ByteCounter {
 
     public static final String FOIL_PITCH_BLACK_ATTACK_PREFIX = "mitigate-pitch-black-attack-";
     public static long PITCH_BLACK_MITIGATION_FREQUENCY_ONE_DAY = DAYS.toMillis(1);
-    public static long PITCH_BLACK_MITIGATION_STARTUP_DELAY = MINUTES.toMillis(10);
+    public static long PITCH_BLACK_MITIGATION_STARTUP_DELAY = HOURS.toMillis(2);
 
     public class MyCallback extends SendMessageOnErrorCallback {
 
@@ -120,14 +123,14 @@ public class LocationManager implements ByteCounter {
     final SwapRequestSender sender;
     final Node node;
     long timeLastSuccessfullySwapped;
-    public static Clock clockForTesting = Clock.systemDefaultZone();
+    public static Clock systemClockUTC = Clock.system(ZoneOffset.UTC);
 
     public LocationManager(RandomSource r, Node node) {
         loc = r.nextDouble();
         sender = new SwapRequestSender();
         this.r = r;
         this.node = node;
-        recentlyForwardedIDs = new Hashtable<Long, RecentlyForwardedItem>();
+        recentlyForwardedIDs = new Hashtable<>();
         // FIXME persist to disk!
         averageSwapTime = new BootstrappingDecayingRunningAverage(SEND_SWAP_INTERVAL, 0, Integer.MAX_VALUE, 20, null);
         timeLocSet = System.currentTimeMillis();
@@ -172,10 +175,10 @@ public class LocationManager implements ByteCounter {
      * we are not locked.
      */
     public void start() {
-    	if(node.enableSwapping) {
+    	if(node.isEnableSwapping()) {
           node.getTicker().queueTimedJob(sender, STARTUP_DELAY);
       }
-		node.ticker.queueTimedJob(new Runnable() {
+		node.getTicker().queueTimedJob(new Runnable() {
 
 			@Override
 			public void run() {
@@ -183,21 +186,22 @@ public class LocationManager implements ByteCounter {
 					clearOldSwapChains();
 					removeTooOldQueuedItems();
 				} finally {
-					node.ticker.queueTimedJob(this, SECONDS.toMillis(10));
+					node.getTicker().queueTimedJob(this, SECONDS.toMillis(10));
 				}
 			}
 
 		}, SECONDS.toMillis(10));
     	// Insert key to probe whether its part of the keyspace is operational. If it is not, switch location to it.
-        node.ticker.queueTimedJob(new Runnable() {
+        node.getTicker().queueTimedJob(new Runnable() {
 
             @Override
             public void run() {
-                node.ticker.queueTimedJob(this, PITCH_BLACK_MITIGATION_FREQUENCY_ONE_DAY);
+                LocalDateTime now = LocalDateTime.now(systemClockUTC);
+                long millisUntilNextRequestTomorrow = getNextPitchBlackMitigationDelayMillisecondsTomorrow(now);
+                node.getTicker().queueTimedJob(this, millisUntilNextRequestTomorrow);
                 if (swappingDisabled()) {
                     return;
                 }
-                LocalDateTime now = LocalDateTime.now(clockForTesting);
                 String isoDateStringToday = DateTimeFormatter.ISO_DATE
                     .format(now);
                 String isoDateStringYesterday = DateTimeFormatter.ISO_DATE
@@ -205,7 +209,7 @@ public class LocationManager implements ByteCounter {
                 File[] previousInsertFromToday = node.userDir().dir()
                     .listFiles((file, name) -> name.startsWith(getPitchBlackPrefix(
                         isoDateStringToday)));
-                HighLevelSimpleClient highLevelSimpleClient = node.clientCore.makeClient(
+                HighLevelSimpleClient highLevelSimpleClient = node.getClientCore().makeClient(
                     RequestStarter.INTERACTIVE_PRIORITY_CLASS,
                     true,
                     false);
@@ -213,7 +217,7 @@ public class LocationManager implements ByteCounter {
                 if (previousInsertFromToday != null
                     && previousInsertFromToday.length == 0) {
                     byte[] randomContentForKSK = new byte[20];
-                    node.secureRandom.nextBytes(randomContentForKSK);
+                    node.getSecureRandom().nextBytes(randomContentForKSK);
                     String randomPart = Base64.encode(randomContentForKSK);
                     String nameForInsert = getPitchBlackPrefix(isoDateStringToday + "-" + randomPart);
                     tryToInsertPitchBlackCheck(highLevelSimpleClient, nameForInsert);
@@ -246,7 +250,21 @@ public class LocationManager implements ByteCounter {
                     }
                 }
             }
-        }, PITCH_BLACK_MITIGATION_STARTUP_DELAY);
+        }, (int) (node.getFastWeakRandom().nextFloat() * PITCH_BLACK_MITIGATION_STARTUP_DELAY));
+    }
+
+    /** @return the millis to wait until the next pitch black check: tomorrow and at least 12 hours in the future. */
+    private long getNextPitchBlackMitigationDelayMillisecondsTomorrow(LocalDateTime now) {
+        return Math.max(HOURS.toMillis(12), getMillisUntilRandomTimeTomorrow(now));
+    }
+
+    private long getMillisUntilRandomTimeTomorrow(LocalDateTime now) {
+        LocalDateTime tomorrowTime = now
+            .plusDays(1)
+            .withHour(node.getFastWeakRandom().nextInt(23))
+            .withMinute(node.getFastWeakRandom().nextInt(59))
+            .withSecond(node.getFastWeakRandom().nextInt(59));
+        return now.until(tomorrowTime, ChronoUnit.MILLIS);
     }
 
     public String getPitchBlackPrefix(String middleSubstring) {
@@ -282,7 +300,7 @@ public class LocationManager implements ByteCounter {
                 switchLocationToDefendAgainstPitchBlackAttack(insertFromYesterday);
             }
         } catch (FetchException e) {
-            if (isRequestExceptionBecauseUriIsNotAvailable(e) && node.fastWeakRandom.nextBoolean()) {
+            if (isRequestExceptionBecauseUriIsNotAvailable(e) && node.getFastWeakRandom().nextBoolean()) {
                 // switch to the attacked location with only 50% probability,
                 // because it could be caused by the defensive swap of another node
                 // which made its current content inaccessible.
@@ -314,7 +332,7 @@ public class LocationManager implements ByteCounter {
         try {
             highLevelSimpleClient.fetch(calculatedChkUri);
         } catch (FetchException e) {
-            if (isRequestExceptionBecauseUriIsNotAvailable(e) && node.fastWeakRandom.nextBoolean()) {
+            if (isRequestExceptionBecauseUriIsNotAvailable(e) && node.getFastWeakRandom().nextBoolean()) {
                 // switch to the attacked location with only 50% probability,
                 // because it could be caused by the defensive swap of another node
                 // which made its current content inaccessible.
@@ -338,7 +356,7 @@ public class LocationManager implements ByteCounter {
             .toNormalizedDouble();
         if (insertFromYesterday instanceof ClientSSK) {
             // decide between SSK and pubkey at random, because they always break together.
-            if (node.fastWeakRandom.nextBoolean()) {
+            if (node.getFastWeakRandom().nextBoolean()) {
                 probedLocationFromYesterday = Util.keyDigestAsNormalizedDouble(
                     ((ClientSSK) insertFromYesterday).getPubKey().getRoutingKey());
             }
@@ -357,14 +375,14 @@ public class LocationManager implements ByteCounter {
         String nameForInsert) {
         // create some random data of up to 1021 bytes to insert to the KSK
         byte[] contentLengthSource = new byte[2];
-        node.fastWeakRandom.nextBytes(contentLengthSource);
+        node.getFastWeakRandom().nextBytes(contentLengthSource);
         // bytes are -127 to 128,
         // so this gives us 253 to 1021 bytes of size
         int contentLength = (5 * 127)
             + (3 * contentLengthSource[0])
             + contentLengthSource[1] / 64; // -1 to 2
         byte[] randomContentToInsert = new byte[contentLength];
-        node.fastWeakRandom.nextBytes(randomContentToInsert);
+        node.getFastWeakRandom().nextBytes(randomContentToInsert);
         ArrayBucket randomBucketToInsert = new ArrayBucket(randomContentToInsert);
         // create the KSK
         ClientKSK insertForToday = (ClientKSK.create(nameForInsert));
@@ -441,7 +459,7 @@ public class LocationManager implements ByteCounter {
                             try {
                                 boolean myFlag = false;
                                 double myLoc = getLocation();
-                                for(PeerNode pn: node.peers.connectedPeers()) {
+                                for(PeerNode pn: node.getPeers().connectedPeers()) {
                                 	PeerLocation l = pn.location;
                                     if(pn.isRoutable()) {
                                     	synchronized(l) {
@@ -465,7 +483,7 @@ public class LocationManager implements ByteCounter {
                                     }
                                 }
                                 if(myFlag) {
-                                    setLocation(node.random.nextDouble());
+                                    setLocation(node.getRandom().nextDouble());
                                     announceLocChange(true, true, true);
                                     node.writeNodeFile();
                                 }
@@ -490,7 +508,7 @@ public class LocationManager implements ByteCounter {
      * the wilderness.
      */
     private void startSwapRequest() {
-    	node.executor.execute(new OutgoingSwapRequestHandler(),
+    	node.getExecutor().execute(new OutgoingSwapRequestHandler(),
                 "Outgoing swap request handler for port "+node.getDarknetPortNumber());
     }
 
@@ -564,7 +582,7 @@ public class LocationManager implements ByteCounter {
 
             long random = r.nextLong();
             double myLoc = getLocation();
-            double[] friendLocs = node.peers.getPeerLocationDoubles(false);
+            double[] friendLocs = node.getPeers().getPeerLocationDoubles(false);
             long[] myValueLong = new long[1+1+friendLocs.length];
             myValueLong[0] = random;
             myValueLong[1] = Double.doubleToLongBits(myLoc);
@@ -579,11 +597,11 @@ public class LocationManager implements ByteCounter {
             MessageFilter filter =
                 MessageFilter.create().setType(DMT.FNPSwapCommit).setField(DMT.UID, uid).setTimeout(TIMEOUT).setSource(pn);
 
-            node.usm.send(pn, m, LocationManager.this);
+            node.getUSM().send(pn, m, LocationManager.this);
 
             Message commit;
             try {
-                commit = node.usm.waitFor(filter, LocationManager.this);
+                commit = node.getUSM().waitFor(filter, LocationManager.this);
             } catch (DisconnectedException e) {
             	if(logMINOR) Logger.minor(this, "Disconnected from "+pn+" while waiting for SwapCommit");
                 return;
@@ -648,7 +666,7 @@ public class LocationManager implements ByteCounter {
             Message confirm = DMT.createFNPSwapComplete(uid, myValue);
             //confirm.addSubMessage(DMT.createFNPSwapLocations(extractUIDs(friendLocsAndUIDs)));
 
-            node.usm.send(pn, confirm, LocationManager.this);
+            node.getUSM().send(pn, confirm, LocationManager.this);
 
             boolean shouldSwap = shouldSwap(myLoc, friendLocs, hisLoc, hisFriendLocs, random ^ hisRandom);
 
@@ -671,8 +689,8 @@ public class LocationManager implements ByteCounter {
             reachedEnd = true;
 
             // Randomise our location every 2*SWAP_RESET swap attempts, whichever way it went.
-            if(node.random.nextInt(SWAP_RESET) == 0) {
-                setLocation(node.random.nextDouble());
+            if(node.getRandom().nextInt(SWAP_RESET) == 0) {
+                setLocation(node.getRandom().nextDouble());
                 announceLocChange(true, true, false);
                 node.writeNodeFile();
             }
@@ -710,7 +728,7 @@ public class LocationManager implements ByteCounter {
                 // pretend that they're locked
                 long random = r.nextLong();
                 double myLoc = getLocation();
-                double[] friendLocs = node.peers.getPeerLocationDoubles(false);
+                double[] friendLocs = node.getPeers().getPeerLocationDoubles(false);
                 long[] myValueLong = new long[1+1+friendLocs.length];
                 myValueLong[0] = random;
                 myValueLong[1] = Double.doubleToLongBits(myLoc);
@@ -722,7 +740,7 @@ public class LocationManager implements ByteCounter {
 
                 Message m = DMT.createFNPSwapRequest(uid, myHash, SWAP_MAX_HTL);
 
-                PeerNode pn = node.peers.getRandomPeer();
+                PeerNode pn = node.getPeers().getRandomPeer();
                 if(pn == null) {
                     // Nowhere to send
                     return;
@@ -738,12 +756,12 @@ public class LocationManager implements ByteCounter {
                     MessageFilter.create().setType(DMT.FNPSwapReply).setField(DMT.UID, uid).setSource(pn).setTimeout(TIMEOUT);
                 MessageFilter filter = filter1.or(filter2);
 
-                node.usm.send(pn, m, LocationManager.this);
+                node.getUSM().send(pn, m, LocationManager.this);
 
                 if(logMINOR) Logger.minor(this, "Waiting for SwapReply/SwapRejected on "+uid);
                 Message reply;
                 try {
-                    reply = node.usm.waitFor(filter, LocationManager.this);
+                    reply = node.getUSM().waitFor(filter, LocationManager.this);
                 } catch (DisconnectedException e) {
                 	if(logMINOR) Logger.minor(this, "Disconnected while waiting for SwapReply/SwapRejected for "+uid);
                     return;
@@ -774,12 +792,12 @@ public class LocationManager implements ByteCounter {
                 MessageFilter filter3 = MessageFilter.create().setField(DMT.UID, uid).setType(DMT.FNPSwapComplete).setTimeout(TIMEOUT).setSource(pn);
                 filter = filter1.or(filter3);
 
-                node.usm.send(pn, confirm, LocationManager.this);
+                node.getUSM().send(pn, confirm, LocationManager.this);
 
                 if(logMINOR) Logger.minor(this, "Waiting for SwapComplete: uid = "+uid);
 
                 try {
-                    reply = node.usm.waitFor(filter, LocationManager.this);
+                    reply = node.getUSM().waitFor(filter, LocationManager.this);
                 } catch (DisconnectedException e) {
                 	if(logMINOR) Logger.minor(this, "Disconnected waiting for SwapComplete on "+uid);
                     return;
@@ -865,8 +883,8 @@ public class LocationManager implements ByteCounter {
                 reachedEnd = true;
 
                 // Randomise our location every 2*SWAP_RESET swap attempts, whichever way it went.
-                if(node.random.nextInt(SWAP_RESET) == 0) {
-                    setLocation(node.random.nextDouble());
+                if(node.getRandom().nextInt(SWAP_RESET) == 0) {
+                    setLocation(node.getRandom().nextDouble());
                     announceLocChange(true, true, false);
                     node.writeNodeFile();
                 }
@@ -890,14 +908,14 @@ public class LocationManager implements ByteCounter {
     }
 
     private void announceLocChange(boolean log, boolean randomReset, boolean fromDupLocation) {
-        Message msg = DMT.createFNPLocChangeNotificationNew(getLocation(), node.peers.getPeerLocationDoubles(true));
-        node.peers.localBroadcast(msg, false, true, this);
+        Message msg = DMT.createFNPLocChangeNotificationNew(getLocation(), node.getPeers().getPeerLocationDoubles(true));
+        node.getPeers().localBroadcast(msg, false, true, this);
 	if(log)
 		recordLocChange(randomReset, fromDupLocation);
     }
 
     private void recordLocChange(final boolean randomReset, final boolean fromDupLocation) {
-        node.executor.execute(new Runnable() {
+        node.getExecutor().execute(new Runnable() {
 
 			@Override
 			public void run() {
@@ -907,7 +925,7 @@ public class LocationManager implements ByteCounter {
 				FileOutputStream os = null;
 				try {
 					os = new FileOutputStream(locationLog, true);
-					BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os, "ISO-8859-1"));
+					BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.ISO_8859_1));
 					DateFormat df = DateFormat.getDateTimeInstance();
 					df.setTimeZone(TimeZone.getTimeZone("GMT"));
 					bw.write(""+df.format(new Date())+" : "+getLocation()+(randomReset ? " (random reset"+(fromDupLocation?" from duplicated location" : "")+")" : "")+'\n');
@@ -1101,7 +1119,7 @@ public class LocationManager implements ByteCounter {
     }
 
     /** Queue of swap requests to handle after this one. */
-    private final Deque<Message> incomingMessageQueue = new LinkedList<Message>();
+    private final Deque<Message> incomingMessageQueue = new LinkedList<>();
 
     static final int MAX_INCOMING_QUEUE_LENGTH = 10;
 
@@ -1179,7 +1197,7 @@ public class LocationManager implements ByteCounter {
         	htl = SWAP_MAX_HTL;
         }
         htl--;
-        if(!node.enableSwapping || htl <= 0 && swappingDisabled()) {
+        if(!node.isEnableSwapping() || htl <= 0 && swappingDisabled()) {
             // Reject
             Message reject = DMT.createFNPSwapRejected(oldID);
             try {
@@ -1201,7 +1219,7 @@ public class LocationManager implements ByteCounter {
             if(logMINOR) Logger.minor(this, "Forwarding... "+oldID);
             while(true) {
                 // Forward
-                PeerNode randomPeer = node.peers.getRandomPeer(pn);
+                PeerNode randomPeer = node.getPeers().getRandomPeer(pn);
                 if(randomPeer == null) {
                 	if(logMINOR) Logger.minor(this, "Late reject "+oldID);
                     Message reject = DMT.createFNPSwapRejected(oldID);
@@ -1248,7 +1266,7 @@ public class LocationManager implements ByteCounter {
     	        lockedTime = System.currentTimeMillis();
     		} else {
     			// Locked.
-    			if((!node.enableSwapQueueing) ||
+    			if((!node.isEnableSwapQueueing()) ||
     					incomingMessageQueue.size() > MAX_INCOMING_QUEUE_LENGTH) {
     				// Reject anyway.
     				reject = true;
@@ -1288,7 +1306,7 @@ public class LocationManager implements ByteCounter {
         IncomingSwapRequestHandler isrh =
             new IncomingSwapRequestHandler(m, pn, item);
         if(logMINOR) Logger.minor(this, "Handling... "+oldID+" from "+pn);
-        node.executor.execute(isrh, "Incoming swap request handler for port "+node.getDarknetPortNumber());
+        node.getExecutor().execute(isrh, "Incoming swap request handler for port "+node.getDarknetPortNumber());
 	}
 
 	private RecentlyForwardedItem addForwardedItem(long uid, long oid, PeerNode pn, PeerNode randomPeer) {
@@ -1512,7 +1530,7 @@ public class LocationManager implements ByteCounter {
      * We lost the connection to a node, or it was restarted.
      */
     public void lostOrRestartedNode(PeerNode pn) {
-        List<RecentlyForwardedItem> v = new ArrayList<RecentlyForwardedItem>();
+        List<RecentlyForwardedItem> v = new ArrayList<>();
         synchronized(recentlyForwardedIDs) {
         	Set<Map.Entry<Long, RecentlyForwardedItem>> entrySet = recentlyForwardedIDs.entrySet();
 			for (Map.Entry<Long, RecentlyForwardedItem> entry : entrySet) {
@@ -1561,7 +1579,7 @@ public class LocationManager implements ByteCounter {
 
     private static final long MAX_AGE = DAYS.toMillis(7);
 
-    private final TimeSortedHashtable<Double> knownLocs = new TimeSortedHashtable<Double>();
+    private final TimeSortedHashtable<Double> knownLocs = new TimeSortedHashtable<>();
 
     void registerLocationLink(double d, double t) {
     	if(logMINOR) Logger.minor(this, "Known Link: "+d+ ' ' +t);
@@ -1607,11 +1625,11 @@ public class LocationManager implements ByteCounter {
 	}
 
 	public static void setClockForTesting(Clock clock) {
-        clockForTesting = clock;
+        systemClockUTC = clock;
   }
 
 	public static Clock getClockForTesting() {
-        return clockForTesting;
+        return systemClockUTC;
   }
 
 	public static double[] extractLocs(PeerNode[] peers, boolean indicateBackoff) {
@@ -1645,12 +1663,12 @@ public class LocationManager implements ByteCounter {
 
 	@Override
 	public void receivedBytes(int x) {
-		node.nodeStats.swappingReceivedBytes(x);
+		node.getNodeStats().swappingReceivedBytes(x);
 	}
 
 	@Override
 	public void sentBytes(int x) {
-		node.nodeStats.swappingSentBytes(x);
+		node.getNodeStats().swappingSentBytes(x);
 	}
 
 	@Override

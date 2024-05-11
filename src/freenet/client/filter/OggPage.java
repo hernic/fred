@@ -145,10 +145,10 @@ public class OggPage {
 			int concludingPartialSegment = packet.payload.length % 255;
 			Logger.minor(this, "Whole segments: "+wholeSegments+" Partial: "+concludingPartialSegment);
 			for(int i = 0; i < wholeSegments; i++) {
-				segmentSizes.add(Byte.valueOf(intToUnsignedByte(255)));
+				segmentSizes.add(intToUnsignedByte(255));
 			}
 			if(concludingPartialSegment != 0) {
-				segmentSizes.add(Byte.valueOf(intToUnsignedByte(concludingPartialSegment)));
+				segmentSizes.add(intToUnsignedByte(concludingPartialSegment));
 			}
 			Logger.minor(this, "Writing packet sized: "+packet.payload.length);
 			payloadStream.write(packet.payload);
@@ -245,11 +245,11 @@ public class OggPage {
 		array[24] = 0;
 		array[25] = 0;
 		int crc_reg = 0;
-		for(int i=0;i<array.length;i++) {
-			/*Ugly, no? This line was taken from jorbis, which, I'd bet money, adapted it to java from libogg,
-			 * which in turn took it from http://www.ross.net/crc/download/crc_v3.txt */
-			crc_reg=(crc_reg<<8) ^ crc_lookup[((crc_reg>>>24) & 0xff) ^ (array[i] & 0xff)];
-		}
+        for (byte b : array) {
+            /*Ugly, no? This line was taken from jorbis, which, I'd bet money, adapted it to java from libogg,
+             * which in turn took it from http://www.ross.net/crc/download/crc_v3.txt */
+            crc_reg = (crc_reg << 8) ^ crc_lookup[((crc_reg >>> 24) & 0xff) ^ (b & 0xff)];
+        }
 		return new byte[] { (byte)crc_reg,
 				(byte) (crc_reg>>>8),
 				(byte) (crc_reg>>>16),

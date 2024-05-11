@@ -240,7 +240,7 @@ public class SlashdotStore<T extends StorableBlock> implements FreenetStore<T> {
 				addFirst.lastAccessed = now;
 				oldBlock = blocksByRoutingKey.push(key, addFirst);
 				if(oldBlock != null) {
-	                if(blocks == null) blocks = new ArrayList<DiskBlock>();
+	                if(blocks == null) blocks = new ArrayList<>();
 	                blocks.add(oldBlock);
 				}
 				writes++;
@@ -249,7 +249,7 @@ public class SlashdotStore<T extends StorableBlock> implements FreenetStore<T> {
 				if(blocksByRoutingKey.isEmpty()) break;
 				DiskBlock block = blocksByRoutingKey.peekValue();
 				if(now - block.lastAccessed < maxLifetime && blocksByRoutingKey.size() < maxKeys) break;
-				if(blocks == null) blocks = new ArrayList<DiskBlock>();
+				if(blocks == null) blocks = new ArrayList<>();
 				blocks.add(block);
 				blocksByRoutingKey.popValue();
 			}

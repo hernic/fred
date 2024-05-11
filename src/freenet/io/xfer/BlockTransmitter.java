@@ -87,7 +87,7 @@ public class BlockTransmitter {
 	final ByteCounter _ctr;
 	final int PACKET_SIZE;
 	private final ReceiverAbortHandler abortHandler;
-	private HashSet<MessageItem> itemsPending = new HashSet<MessageItem>();
+	private HashSet<MessageItem> itemsPending = new HashSet<>();
 	
 	private final Ticker _ticker;
 	private final Executor _executor;
@@ -418,19 +418,6 @@ public class BlockTransmitter {
 		};
 	}
 	
-	/** Abort the send, and then send the sendAborted message. Don't do anything if the
-	 * send has already been aborted. */
-	public void abortSend(int reason, String desc) throws NotConnectedException {
-		if(logMINOR) Logger.minor(this, "Aborting send on "+this);
-		Future fail;
-		synchronized(_senderThread) {
-			_failed = true;
-			fail = maybeFail(reason, desc);
-		}
-		fail.execute();
-		cancelItemsPending();
-	}
-	
 	public void innerSendAborted(int reason, String desc) throws NotConnectedException {
 		_usm.send(_destination, DMT.createSendAborted(_uid, reason, desc), _ctr);
 	}
@@ -621,7 +608,7 @@ public class BlockTransmitter {
 		
 		try {
 			synchronized(_prb) {
-				_unsent = _prb.addListener(myListener = new PartiallyReceivedBlock.PacketReceivedListener() {;
+				_unsent = _prb.addListener(myListener = new PartiallyReceivedBlock.PacketReceivedListener() {
 
 					@Override
 					public void packetReceived(int packetNo) {
@@ -771,8 +758,8 @@ public class BlockTransmitter {
 			}
 		}
 
-	};
-	
+	}
+
 	private int blockSendsPending = 0;
 	
 	private long lastSentPacket = -1;

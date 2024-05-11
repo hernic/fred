@@ -54,7 +54,7 @@ public class DecompressorThreadManager {
 	 * @param maxLen The maximum number of bytes to extract
 	 */
 	public DecompressorThreadManager(PipedInputStream inputStream, List<? extends Compressor> decompressors, long maxLen) throws IOException {
-		threads = new ArrayDeque<DecompressorThread>(decompressors.size());
+		threads = new ArrayDeque<>(decompressors.size());
 		this.maxLen = maxLen;
 		if(inputStream == null) {
 			IOException e = new IOException("Input stream may not be null");

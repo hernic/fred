@@ -21,8 +21,8 @@ public class SemiOrderedShutdownHook extends Thread {
 	}
 	
 	private SemiOrderedShutdownHook() {
-		earlyJobs = new ArrayList<Thread>();
-		lateJobs = new ArrayList<Thread>();
+		earlyJobs = new ArrayList<>();
+		lateJobs = new ArrayList<>();
 	}
 	
 	public synchronized void addEarlyJob(Thread r) {

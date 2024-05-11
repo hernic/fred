@@ -145,6 +145,8 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 		boolean wasHeadElementFound=false;
 		/** We can only have <head> once, and <meta>/<title> can't be outside it. This helps with robustness against charset attacks and allows us to stop looking for <meta> as soon as we see </head> when detecting charset. */
 		boolean headEnded=false;
+		/** if a &lt;video&gt; or &lt;audio&gt; tag is present in the file, it makes sense to include the media player. */ 
+		boolean wasMediaElementFound=false;
 
 		HTMLParseContext(Reader r, Writer w, String charset, FilterCallback cb, boolean onlyDetectingCharset) {
 			this.r = r;
@@ -240,7 +242,7 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 							if(textAllowed) {
 								saveText(b, currentTag, w, this);
 							} else {
-								if(!b.toString().trim().equals(""))
+								if(!b.toString().trim().isEmpty())
 									throwFilterException(l10n("textBeforeHTML"));
 							}
 							break;
@@ -292,7 +294,7 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 								if(textAllowed) {
 									saveText(b, currentTag, w, this);
 								} else {
-									if(!b.toString().trim().equals(""))
+									if(!b.toString().trim().isEmpty())
 										throwFilterException(l10n("textBeforeHTML"));
 								}
 								b.setLength(0);
@@ -314,7 +316,7 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 								if(textAllowed) {
 									saveText(b, currentTag, w, this);
 								} else {
-									if(!b.toString().trim().equals(""))
+									if(!b.toString().trim().isEmpty())
 										throwFilterException(l10n("textBeforeHTML"));
 								}
 
@@ -452,7 +454,7 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 								if(textAllowed) {
 									saveText(b, currentTag, w, this);
 								} else {
-									if(!b.toString().trim().equals(""))
+									if(!b.toString().trim().isEmpty())
 										throwFilterException(l10n("textBeforeHTML"));
 								}
 								balt.setLength(0);
@@ -606,10 +608,9 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 				//To achieve this, we keep track whether we processed the <head>
 				if(t.element.compareTo("head")==0 && !t.startSlash){
 					pc.wasHeadElementFound=true;
+				} else if ((t.element.compareTo("video")==0 || t.element.compareTo("audio")==0) && !t.startSlash) {
+					pc.wasMediaElementFound=true;
 				} else if(t.element.compareTo("head")==0 && t.startSlash) {
-					if (embedM3uPlayer) {
-						w.write(m3uPlayerScriptTagContent);
-					}
 					pc.headEnded = true;
 					if(pc.onlyDetectingCharset) pc.failedDetectCharset = true;
 				//If we found a <title> or a <meta> without a <head>, then we need to add them to a <head>
@@ -625,9 +626,6 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 				//If we found a <body> and haven't closed <head> already, then we do
 				}else if(t.element.compareTo("body") == 0 &&  pc.openElements.contains("head")){
 					if(!pc.onlyDetectingCharset) {
-						if (embedM3uPlayer) {
-							w.write(m3uPlayerScriptTagContent);
-						}
 						w.write("</head>");
 					}
 					pc.headEnded = true;
@@ -639,13 +637,15 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 					String headContent=pc.cb.processTag(new ParsedTag("head", new HashMap<String, String>()));
 					if(headContent!=null){
 						if(!pc.onlyDetectingCharset) {
-							if (embedM3uPlayer) {
-								w.write(m3uPlayerScriptTagContent);
-							}
 							w.write(headContent+"</head>");
 						}
 						pc.headEnded = true;
 						if(pc.onlyDetectingCharset) pc.failedDetectCharset = true;
+					}
+				// if the body is ended and we found a media tag (<video> or <audio>) we include the m3u-player just before the end of the body. 
+				}else if(t.element.compareTo("body")==0 && t.startSlash && pc.wasMediaElementFound) {
+					if (embedM3uPlayer) {
+						w.write(m3uPlayerScriptTagContent);
 					}
 				}
 
@@ -841,9 +841,9 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 			sb.append(element);
 			if (unparsedAttrs != null) {
 				int n = unparsedAttrs.length;
-				for (int i = 0; i < n; i++) {
-					sb.append(' ').append(unparsedAttrs[i]);
-				}
+                for (String unparsedAttr : unparsedAttrs) {
+                    sb.append(' ').append(unparsedAttr);
+                }
 			}
 			if (endSlash)
 				sb.append(" /");
@@ -992,7 +992,10 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 				"footer",
 				"article",
 				"section",
-				"hgroup"};
+				"hgroup",
+				"wbr",
+				"summary",
+				"details"};
 		for (String x: group2)
 			allowedTagsVerifiers.put(
 				x,
@@ -2142,9 +2145,9 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 			}
 			this.booleanAttrs = new HashSet<String>();
 			if (booleanAttrs != null) {
-				for(int x = 0; x < booleanAttrs.length; x++) {
-					this.booleanAttrs.add(booleanAttrs[x]);
-				}
+                for (String booleanAttr : booleanAttrs) {
+                    this.booleanAttrs.add(booleanAttr);
+                }
 			}
 		}
 
@@ -2686,7 +2689,7 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 				StringTokenizer tok = new StringTokenizer(rel, " ");
 				int i=0;
 				String prevToken = null;
-				StringBuffer sb = new StringBuffer(rel.length());
+				StringBuilder sb = new StringBuilder(rel.length());
 				while (tok.hasMoreTokens()) {
 					String token = tok.nextToken();
 					if(token.equalsIgnoreCase("stylesheet")) {
@@ -2717,11 +2720,11 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 			String rev = getHashString(h, "rev");
 			if(rev != null) {
 
-				StringBuffer sb = new StringBuffer(rev.length());
+				StringBuilder sb = new StringBuilder(rev.length());
 				rev = rev.toLowerCase();
 
 				StringTokenizer tok = new StringTokenizer(rev, " ");
-				sb = new StringBuffer(rev.length());
+				sb = new StringBuilder(rev.length());
 
 				while (tok.hasMoreTokens()) {
 					String token = tok.nextToken();
@@ -2967,7 +2970,8 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 		private static final String[] locallyVerifiedAttrs = {
 			"http-equiv",
 			"name",
-			"content"
+			"content",
+            "charset"
 		};
 
 		MetaTagVerifier() {
@@ -3000,6 +3004,9 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 						hn.put("name", name);
 						hn.put("content", content);
 					} else if (name.equalsIgnoreCase("Description")) {
+						hn.put("name", name);
+						hn.put("content", content);
+					} else if (name.equalsIgnoreCase("Viewport")) {
 						hn.put("name", name);
 						hn.put("content", content);
 					}
@@ -3062,7 +3069,7 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 							throwFilterException(l10n("invalidMetaType"));
 					} else if (
 						http_equiv.equalsIgnoreCase("Content-Language")) {
-						if(content.matches("((?>[a-zA-Z0-9]*)(?>-[A-Za-z0-9]*)*(?>,\\s*)?)*") && (!content.trim().equals(""))) {
+						if(content.matches("((?>[a-zA-Z0-9]*)(?>-[A-Za-z0-9]*)*(?>,\\s*)?)*") && (!content.trim().isEmpty())) {
 							hn.put("http-equiv", "Content-Language");
 							hn.put("content", content);
 						}
@@ -3116,10 +3123,11 @@ public class HTMLFilter implements ContentDataFilter, CharsetExtractor {
 			/* try HTML5 meta charset declaration. */
 			String charset = getHashString(h, "charset");
 			if (charset != null) {
-				if ((pc.detectedCharset != null) && !charset.equals(pc.detectedCharset)) {
+				if ((pc.detectedCharset != null) && !charset.equalsIgnoreCase(pc.detectedCharset)) {
 					throwFilterException(l10n("multipleCharsetsInMeta"));
 				}
 				pc.detectedCharset = charset;
+				hn.put("charset", charset);
 			}
 
 			return hn;

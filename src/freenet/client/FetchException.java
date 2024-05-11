@@ -353,7 +353,7 @@ public class FetchException extends Exception implements Cloneable {
         // FIXME change the l10n to use the names rather than codes
 	    int code = mode.code;
 		String ret = NodeL10n.getBase().getString("FetchException.shortError."+code);
-		if(ret == null || ret.equals(""))
+		if(ret == null || ret.isEmpty())
 			return "Unknown code "+mode;
 		else return ret;
 	}
@@ -396,8 +396,8 @@ public class FetchException extends Exception implements Cloneable {
 		else return ret;
 	}
 	
-    private static final HashMap<Integer, FetchExceptionMode> modes = 
-        new HashMap<Integer, FetchExceptionMode>();
+    private static final HashMap<Integer, FetchExceptionMode> modes =
+            new HashMap<>();
 
     // Modes should stay the same even if we remove some elements.
 	public static enum FetchExceptionMode {

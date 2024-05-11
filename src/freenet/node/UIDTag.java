@@ -62,7 +62,7 @@ public abstract class UIDTag {
 		this.sourceRef = source == null ? null : source.myRef;
 		wasLocal = source == null;
 		this.realTimeFlag = realTimeFlag;
-		this.tracker = node.tracker;
+		this.tracker = node.getTracker();
 		this.uid = uid;
 		if(logMINOR)
 			Logger.minor(this, "Created "+this);
@@ -89,13 +89,13 @@ public abstract class UIDTag {
 	public synchronized boolean addRoutedTo(PeerNode peer, boolean offeredKey) {
 		if(logMINOR)
 			Logger.minor(this, "Routing to "+peer+" on "+this+(offeredKey ? " (offered)" : ""), new Exception("debug"));
-		if(routedTo == null) routedTo = new HashSet<PeerNode>();
+		if(routedTo == null) routedTo = new HashSet<>();
 		routedTo.add(peer);
 		if(offeredKey) {
-			if(fetchingOfferedKeyFrom == null) fetchingOfferedKeyFrom = new HashSet<PeerNode>();
+			if(fetchingOfferedKeyFrom == null) fetchingOfferedKeyFrom = new HashSet<>();
 			return fetchingOfferedKeyFrom.add(peer);
 		} else {
-			if(currentlyRoutingTo == null) currentlyRoutingTo = new HashSet<PeerNode>();
+			if(currentlyRoutingTo == null) currentlyRoutingTo = new HashSet<>();
 			return currentlyRoutingTo.add(peer);
 		}
 	}
@@ -311,7 +311,6 @@ public abstract class UIDTag {
 			}
 			return false;
 		}
-		Logger.normal(this, "Unlocking "+this, new Exception("debug"));
 		hasUnlocked = true;
 		return true;
 	}
@@ -349,7 +348,7 @@ public abstract class UIDTag {
 	// Also it is only used in logging anyway.
 	@Override
 	public synchronized String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append(super.toString());
 		sb.append(":");
 		sb.append(uid);
@@ -384,7 +383,7 @@ public abstract class UIDTag {
 	 */
 	public synchronized void handlingTimeout(PeerNode next) {
 		if(handlingTimeouts == null)
-			handlingTimeouts = new HashSet<PeerNode>();
+			handlingTimeouts = new HashSet<>();
 		handlingTimeouts.add(next);
 	}
 

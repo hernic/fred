@@ -1,7 +1,7 @@
 /*
  * Build script for Fred. Currently it works under Gradle version 7.
  *
- * ===============
+ * ============
  * Dependency tree
  * ===============
  *
@@ -52,7 +52,17 @@ plugins {
 //    id "com.dorongold.task-tree" version "2.1.0"
 }
 
+configurations {
+    provided
+    implementation
+}
+
+// apply plugin: 'witness' -not gradle 8.5 compliant cf. : https://github.com/signalapp/gradle-witness (fork needed ?)
+apply plugin: 'java'
+apply plugin: 'maven-publish'
+
 repositories {
+    flatDir { dirs uri("${projectDir}/lib") }
     maven { url 'https://mvn.freenetproject.org' }
     mavenCentral()
 }
@@ -62,11 +72,12 @@ dependencies {
     implementation "net.java.dev.jna:jna:4.5.2"
     implementation "net.java.dev.jna:jna-platform:4.5.2"
     implementation "org.freenetproject:freenet-ext:29"
-
     testImplementation 'junit:junit:4.12'
     testImplementation "org.mockito:mockito-core:1.9.5"
     testImplementation "org.hamcrest:hamcrest-library:1.3"
 }
+
+def version_src = 'freenet/node/Version.java'
 
 sourceSets {
     main {
@@ -114,6 +125,12 @@ tasks.register("copyVersion", Copy) {
     filter {
         String line -> line.replaceAll("@custom@", "${gitrev}")
     }
+
+sourceCompatibility = 21
+targetCompatibility = 21
+
+tasks.withType(JavaCompile) {
+    options.encoding = "UTF-8"
 }
 
 // Compile modified Version.java
@@ -150,6 +167,27 @@ tasks.register("copyResourcesToClasses2") {
     }
 }
 
+task compileVersion (type: JavaCompile) {
+    copy {
+        from sourceSets.main.java.srcDirs
+        into "${buildDir}/build/tmp/compileVersion/"
+        include "${version_src}"
+        filter {
+            String line -> line.replaceAll("@custom@","${gitrev}")
+        }
+    }
+    sourceCompatibility = 21
+    targetCompatibility = 21
+    source = "${buildDir}/build/tmp/compileVersion/"
+    include "${version_src}"
+    classpath = files(sourceSets.main.compileClasspath, sourceSets.main.output.classesDirs)
+    destinationDir = file("${buildDir}/java/version/")
+}
+
+compileVersion.dependsOn buildInfo
+compileVersion.dependsOn compileJava
+processResources.dependsOn compileVersion
+
 tasks.named("classes").configure {
     dependsOn 'copyResourcesToClasses2'
 }
@@ -167,6 +205,7 @@ tasks.register("jar2", Jar) {
     }
 
     preserveFileTimestamps = false
+
     reproducibleFileOrder = true
     duplicatesStrategy = "warn"
     archivesBaseName = "freenet"
@@ -190,9 +229,32 @@ tasks.register("jar2", Jar) {
 // New way to replace the original jar task
 // https://stackoverflow.com/questions/63189888/gradle-cannot-overwrite-task-with-overwritetrue
 tasks.named("jar").configure {
-    dependsOn 'jar2'
+            dependsOn 'jar2'
+            actions.clear()
+            jars.each { hash(it) }
+        }
+    }
+})
 
-    actions.clear()
+task copyResourcesToClasses2 {
+    inputs.dir sourceSets.main.java.srcDirs
+    outputs.dir sourceSets.main.output.classesDirs
+    doLast {
+        copy {
+            from sourceSets.main.java.srcDirs
+            into sourceSets.main.output.classesDirs
+            include 'freenet/l10n/*properties'
+            include 'freenet/l10n/iso-*.tab'
+            include 'freenet/clients/http/staticfiles/**'
+            include 'freenet/clients/http/templates/**'
+            include '../dependencies.properties'
+        }
+        copy {
+            from "${projectDir}/"
+            into sourceSets.main.output.classesDirs
+            include 'dependencies.properties'
+        }
+    }
 }
 
 // Copy required test resources to java test classes directory
@@ -203,9 +265,18 @@ tasks.register("copyTestResourcesToClasses2") {
         copy {
             from sourceSets.test.java.srcDirs
             into sourceSets.test.java.classesDirectory
+
+task copyTestResourcesToClasses2 {
+    inputs.dir sourceSets.test.java.srcDirs
+    outputs.dir sourceSets.test.output.classesDirs
+    doLast {
+        copy {
+	    from sourceSets.test.java.srcDirs
+	    into sourceSets.test.output.classesDirs
             include 'freenet/client/filter/*/**'
             include 'freenet/crypt/ciphers/rijndael-gladman-test-data/**'
             include 'freenet/l10n/*properties'
+            include 'freenet/clients/http/templates/**'
         }
     }
 }
@@ -217,12 +288,19 @@ tasks.named("testClasses").configure {
 test {
     useJUnit()
 
+    if(JavaVersion.current() >= JavaVersion.VERSION_1_9) {
+        jvmArgs '--add-opens=java.base/java.lang=ALL-UNNAMED'
+        jvmArgs '--add-opens=java.base/java.util=ALL-UNNAMED'
+        jvmArgs '--add-opens=java.base/java.io=ALL-UNNAMED'
+        jvmArgs '--add-opens=java.base/java.util.zip=ALL-UNNAMED'
+    }
     minHeapSize = "128m"
     maxHeapSize = "512m"
     // no inner class
     include 'freenet/**/*Test.class'
     exclude 'freenet/**/*$*Test.class'
     workingDir = sourceSets.test.java.classesDirectory
+   // workingDir = sourceSets.test.output.classesDirs
     scanForTestClasses = false
     systemProperties += [
             "test.l10npath_test": "freenet/l10n/",
@@ -242,6 +320,10 @@ test {
                 "--add-opens", "java.base/java.io=ALL-UNNAMED",
         ]
     }
+}
+
+tasks.withType(Test) {
+    enableAssertions = false
 }
 
 publishing {
@@ -264,6 +346,7 @@ publishing {
     }
 }
 
+
 tasks.register("copyRuntimeLibs", Copy) {
     dependsOn "jar2"
 
@@ -275,11 +358,56 @@ tasks.named("assemble").configure {
     dependsOn 'copyRuntimeLibs'
 }
 
+task copyRuntimeLibs(type: Copy) {
+    into "${buildDir}/output/"
+    from configurations.runtimeOnly
+    from jar
+}
+copyRuntimeLibs.dependsOn jar
+
+// In this section you declare the dependencies for your production and test code
+dependencies {
+    implementation "org.bouncycastle:bcprov-jdk15on:1.59"
+    implementation "net.java.dev.jna:jna:4.5.2"
+    implementation "net.java.dev.jna:jna-platform:4.5.2"
+    implementation "org.freenetproject:freenet-ext:29"
+    implementation "io.pebbletemplates:pebble:3.1.5"
+    // dependencies of pebble
+    implementation "org.unbescape:unbescape:1.1.6.RELEASE"
+    implementation "org.slf4j:slf4j-api:1.7.25"
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation "org.mockito:mockito-core:1.9.5"
+    testImplementation "org.hamcrest:hamcrest:2.2"
+    testImplementation "org.objenesis:objenesis:1.0"
+}
+
+// looks as not working with new gradle
+/* dependencyVerification {
+    // testImplementation includes all of compile deps... so let's include only these
+    includedConfigurations = [configurations.testImplementation]
+    verify = [
+        'org.bouncycastle:bcprov-jdk15on:1c31e44e331d25e46d293b3e8ee2d07028a67db011e74cb2443285aed1d59c85',
+        'net.java.dev.jna:jna-platform:f1d00c167d8921c6e23c626ef9f1c3ae0be473c95c68ffa012bc7ae55a87e2d6',
+        'net.java.dev.jna:jna:0c8eb7acf67261656d79005191debaba3b6bf5dd60a43735a245429381dbecff',
+        'org.freenetproject:freenet-ext:32f2b3d6beedf54137ea2f9a3ebef67666d769f0966b08cd17fd7db59ba4d79f',
+        'junit:junit:8e495b634469d64fb8acfa3495a065cbacc8a0fff55ce1e31007be4c16dc57d3',
+        'org.mockito:mockito-core:f97483ba0944b9fa133aa29638764ddbeadb51ec3dbc02074c58fa2caecd07fa',
+        'org.hamcrest:hamcrest:5e62846a89f05cd78cd9c1a553f340d002458380c320455dd1f8fc5497a8a1c1',
+        'org.objenesis:objenesis:c5694b55d92527479382f254199b3c6b1d8780f652ad61e9ca59919887f491a8',
+        'io.pebbletemplates:pebble:d253a6dde59e138698aaaaee546461d2f1f6c8bd2aa38ecdd347df17cf90d6f0',
+        // dependencies of pebble
+        'org.unbescape:unbescape:597cf87d5b1a4f385b9d1cec974b7b483abb3ee85fc5b3f8b62af8e4bec95c2c',
+        'org.slf4j:slf4j-api:18c4a0095d5c1da6b817592e767bb23d29dd2f560ad74df75ff3961dbde25b79'
+    ]
+}*/
+
 tasks.register("tar", Tar) {
     description = "Build a source release, specifically excluding the build directories and gradle wrapper files"
     compression = Compression.BZIP2
 
-    archiveBaseName = "freenet-sources"
+
+  archivesBaseName = "freenet-sources"
 
     from(project.rootDir) {
         exclude '**/build'
@@ -303,4 +431,24 @@ tasks.register("tar", Tar) {
 
 tasks.named("javadoc").configure {
     failOnError = false
+}
+
+into(archivesBaseName)
+
+  preserveFileTimestamps = true
+  reproducibleFileOrder = true
+
+  // Set destination directory.
+    getDestinationDirectory().set(file("${project.buildDir}"))
+
+  archivesBaseName = "${archivesBaseName}.tgz"
+  doLast { // generate md5 checksum
+    ant.checksum file:"$destinationDir/$archivesBaseName"
+  }
+}
+
+javadoc {
+    doLast {
+        failOnError false
+    }
 }

@@ -74,47 +74,46 @@ public class WelcomeToadlet extends Toadlet {
         if (items.size() > 0) {
             // FIXME CSS noborder ...
             HTMLNode table = list.addChild("li").addChild("table", new String[]{"border", "style"}, new String[]{"0", "border: none"});
-            for (int i = 0; i < items.size(); i++) {
-                BookmarkItem item = items.get(i);
+            for (BookmarkItem item : items) {
                 HTMLNode row = table.addChild("tr");
                 HTMLNode cell = row.addChild("td", "style", "border: none;");
                 if (item.hasAnActivelink() && !noActiveLinks) {
                     String initialKey = item.getKey();
                     String key = '/' + initialKey + (initialKey.endsWith("/") ? "" : "/") + "activelink.png";
                     cell.addChild("div", "style", "height: 36px; width: 108px;").addChild("a", "href", '/' + item.getKey()).addChild("img", new String[]{"src", "alt", "style", "title"},
-                            new String[]{ key, "activelink", "height: 36px; width: 108px", item.getDescription()});
+                            new String[]{key, "activelink", "height: 36px; width: 108px", item.getDescription()});
                 } else {
                     cell.addChild("#", " ");
                 }
                 cell = row.addChild("td", "style", "border: none");
-                
+
                 boolean updated = item.hasUpdated(); // We use it twice so copy for thread safety
                 String linkClass = updated ? "bookmark-title-updated" : "bookmark-title";
                 cell.addChild(
-                    "a",
-                    new String[]{"href", "title", "class"},
-                    new String[]{'/' + item.getKey(), item.getDescription(), linkClass},
-                    item.getVisibleName());
-                
+                        "a",
+                        new String[]{"href", "title", "class"},
+                        new String[]{'/' + item.getKey(), item.getDescription(), linkClass},
+                        item.getVisibleName());
+
                 String explain = item.getShortDescription();
-                if(explain != null && explain.length() > 0) {
-                	cell.addChild("#", " (");
-                	cell.addChild("#", explain);
-                	cell.addChild("#", ")");
+                if (explain != null && explain.length() > 0) {
+                    cell.addChild("#", " (");
+                    cell.addChild("#", explain);
+                    cell.addChild("#", ")");
                 }
 
                 if (updated) {
                     cell = row.addChild("td", "style", "border: none");
-                    cell.addChild(node.clientCore.alerts.renderDismissButton(
-                        item.getUserAlert(), path() + "#" + BOOKMARKS_ANCHOR));
+                    cell.addChild(node.getClientCore().getAlerts().renderDismissButton(
+                            item.getUserAlert(), path() + "#" + BOOKMARKS_ANCHOR));
                 }
             }
         }
 
         List<BookmarkCategory> cats = cat.getSubCategories();
-        for (int i = 0; i < cats.size(); i++) {
-            list.addChild("li", "class", "cat", cats.get(i).getVisibleName());
-            addCategoryToList(cats.get(i), list.addChild("li").addChild("ul"), noActiveLinks, ctx);
+        for (BookmarkCategory bookmarkCategory : cats) {
+            list.addChild("li", "class", "cat", bookmarkCategory.getVisibleName());
+            addCategoryToList(bookmarkCategory, list.addChild("li").addChild("ul"), noActiveLinks, ctx);
         }
     }
     
@@ -125,15 +124,15 @@ public class WelcomeToadlet extends Toadlet {
 
     public boolean showSearchBox() {
         // Only show it if Library is loaded.
-        return (node.pluginManager != null &&
-                node.pluginManager.isPluginLoaded("plugins.Library.Main"));
+        return (node.getPluginManager() != null &&
+                node.getPluginManager().isPluginLoaded("plugins.Library.Main"));
     }
     
     public boolean showSearchBoxLoading() {
         // Only show it if Library is loaded.
-        return (node.pluginManager == null ||
-                (!node.pluginManager.isPluginLoaded("plugins.Library.Main") &&
-                 node.pluginManager.isPluginLoadedOrLoadingOrWantLoad("Library")));
+        return (node.getPluginManager() == null ||
+                (!node.getPluginManager().isPluginLoaded("plugins.Library.Main") &&
+                 node.getPluginManager().isPluginLoadedOrLoadingOrWantLoad("Library")));
     }
 
     public void addSearchBox(HTMLNode contentNode) {
@@ -306,7 +305,7 @@ public class WelcomeToadlet extends Toadlet {
             MultiValueTable<String, String> headers = new MultiValueTable<String, String>();
             headers.put("Location", "/?terminated&formPassword=" + ctx.getFormPassword());
             ctx.sendReplyHeaders(302, "Found", headers, null, 0);
-            node.ticker.queueTimedJob(new Runnable() {
+            node.getTicker().queueTimedJob(new Runnable() {
 
 				@Override
                         public void run() {
@@ -330,7 +329,7 @@ public class WelcomeToadlet extends Toadlet {
             MultiValueTable<String, String> headers = new MultiValueTable<String, String>();
             headers.put("Location", "/?restarted&formPassword=" + ctx.getFormPassword());
             ctx.sendReplyHeaders(302, "Found", headers, null, 0);
-            node.ticker.queueTimedJob(new Runnable() {
+            node.getTicker().queueTimedJob(new Runnable() {
 
 				@Override
                         public void run() {
@@ -352,7 +351,7 @@ public class WelcomeToadlet extends Toadlet {
             }
 
             UpgradeConnectionSpeedUserAlert upgradeConnectionSpeedAlert = null;
-            for (UserAlert alert : node.clientCore.alerts.getAlerts()) {
+            for (UserAlert alert : node.getClientCore().getAlerts().getAlerts()) {
                 if (alert instanceof UpgradeConnectionSpeedUserAlert) {
                     upgradeConnectionSpeedAlert = (UpgradeConnectionSpeedUserAlert) alert;
                     break;
@@ -387,8 +386,8 @@ public class WelcomeToadlet extends Toadlet {
 
             if (errorMessage == null) {
                 try {
-                    node.config.get("node").set("inputBandwidthLimit", request.getPartAsStringFailsafe("inputBandwidthLimit", Byte.MAX_VALUE));
-                    node.config.get("node").set("outputBandwidthLimit", request.getPartAsStringFailsafe("outputBandwidthLimit", Byte.MAX_VALUE));
+                    node.getConfig().get("node").set("inputBandwidthLimit", request.getPartAsStringFailsafe("inputBandwidthLimit", Byte.MAX_VALUE));
+                    node.getConfig().get("node").set("outputBandwidthLimit", request.getPartAsStringFailsafe("outputBandwidthLimit", Byte.MAX_VALUE));
 
                     if (upgradeConnectionSpeedAlert != null) {
                         upgradeConnectionSpeedAlert.setUpgraded(true);
@@ -415,7 +414,7 @@ public class WelcomeToadlet extends Toadlet {
         if (ctx.isAllowedFullAccess()) {
 
             if (request.isParameterSet("latestlog")) {
-                final File logs = new File(node.config.get("logger").getString("dirname") + File.separator + "freenet-latest.log");
+                final File logs = new File(node.getConfig().get("logger").getString("dirname") + File.separator + "freenet-latest.log");
                 String text = readLogTail(logs, 100000);
                 this.writeTextReply(ctx, 200, "OK", text);
                 return;
@@ -451,9 +450,6 @@ public class WelcomeToadlet extends Toadlet {
                 addForm.addChild("#", l10n("confirmAddBookmarkWithKey", "key", request.getParam("newbookmark")));
                 addForm.addChild("br");
                 String key = request.getParam("newbookmark");
-                if (key.startsWith("freenet:")) {
-                    key = key.substring(8);
-                }
                 addForm.addChild("input", new String[]{"type", "name", "value"}, new String[]{"hidden", "key", key});
                 if(request.isParameterSet("hasAnActivelink")) {
                 	addForm.addChild("input", new String[]{"type", "name", "value"}, new String[]{"hidden","hasAnActivelink",request.getParam("hasAnActivelink")});
@@ -512,7 +508,7 @@ public class WelcomeToadlet extends Toadlet {
 
         if (useragent != null) {
             useragent = useragent.toLowerCase();
-            if ((useragent.indexOf("msie") > -1) && (useragent.indexOf("opera") == -1)) {
+            if (useragent.contains("msie") && !useragent.contains("opera")) {
             	ctx.getPageMaker().getInfobox("infobox-alert", l10n("ieWarningTitle"), contentNode, "internet-explorer-used", true).
                 	addChild("#", l10n("ieWarning"));
             }
@@ -523,7 +519,7 @@ public class WelcomeToadlet extends Toadlet {
 			contentNode.addChild(ctx.getAlertManager().createSummary());
         }
 		
-        if (node.config.get("fproxy").getBoolean("fetchKeyBoxAboveBookmarks")) {
+        if (node.getConfig().get("fproxy").getBoolean("fetchKeyBoxAboveBookmarks")) {
             this.putFetchKeyBox(ctx, contentNode);
         }
         
@@ -554,7 +550,7 @@ public class WelcomeToadlet extends Toadlet {
         }
 
         // Fetch key box if the theme wants it below the bookmarks.
-        if (!node.config.get("fproxy").getBoolean("fetchKeyBoxAboveBookmarks")) {
+        if (!node.getConfig().get("fproxy").getBoolean("fetchKeyBoxAboveBookmarks")) {
             this.putFetchKeyBox(ctx, contentNode);
         }
 

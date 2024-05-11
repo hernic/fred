@@ -141,7 +141,7 @@ public class PrioritizedSerialExecutor implements Executor {
 			return null;
 		}
 
-	};
+	}
 
 	/**
 	 *
@@ -155,7 +155,7 @@ public class PrioritizedSerialExecutor implements Executor {
 		ArrayDeque<Runnable>[] jobs = (ArrayDeque<Runnable>[])
 			new ArrayDeque<?>[internalPriorityCount];
 		for (int i=0;i<jobs.length;i++) {
-			jobs[i] = new ArrayDeque<Runnable>();
+			jobs[i] = new ArrayDeque<>();
 		}
 		this.jobs = jobs;
 		this.priority = priority;
@@ -309,8 +309,7 @@ public class PrioritizedSerialExecutor implements Executor {
 
 	public boolean anyQueued() {
 		synchronized(jobs) {
-			for(int i=0;i<jobs.length;i++)
-				if(jobs[i].size() > 0) return true;
+            for (ArrayDeque<Runnable> job : jobs) if (job.size() > 0) return true;
 		}
 		return false;
 	}

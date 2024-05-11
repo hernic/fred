@@ -240,16 +240,16 @@ public class USK extends BaseClientKey implements Comparable<USK>, Serializable 
 		return 0;
 	}
 	
-	public static final Comparator<USK> FAST_COMPARATOR = new Comparator<USK>() {
+	public static final Comparator<USK> FAST_COMPARATOR = new Comparator<>() {
 
-		@Override
-		public int compare(USK o1, USK o2) {
-			if(o1.hashCode > o2.hashCode) return 1;
-			else if(o1.hashCode < o2.hashCode) return -1;
-			return o1.compareTo(o2);
-		}
-		
-	};
+        @Override
+        public int compare(USK o1, USK o2) {
+            if (o1.hashCode > o2.hashCode) return 1;
+            else if (o1.hashCode < o2.hashCode) return -1;
+            return o1.compareTo(o2);
+        }
+
+    };
 
 	public byte[] getPubKeyHash() {
 		return Arrays.copyOf(pubKeyHash, pubKeyHash.length);

@@ -43,7 +43,7 @@ public class ArchiveContext implements Serializable {
 	 */
 	public synchronized void doLoopDetection(FreenetURI key) throws ArchiveFailureException {
 		if(soFar == null) {
-			soFar = new HashSet<FreenetURI>();
+			soFar = new HashSet<>();
 		}
 		if(soFar.size() > maxArchiveLevels)
 			throw new ArchiveFailureException(ArchiveFailureException.TOO_MANY_LEVELS);

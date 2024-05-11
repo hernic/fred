@@ -81,7 +81,7 @@ public class FirstTimeWizardToadlet extends Toadlet {
 		//Generic Toadlet-related initialization.
 		super(client);
 		this.core = core;
-		Config config = node.config;
+		Config config = node.getConfig();
 
 		addWizardConfiguration(config);
 
@@ -187,7 +187,7 @@ public class FirstTimeWizardToadlet extends Toadlet {
 			super.writeTemporaryRedirect(ctx, "Need opennet choice",
 			        persistFields.appendTo(TOADLET_URL+"?step=OPENNET"));
 			return;
-		} else if (currentStep == WIZARD_STEP.NAME_SELECTION && core.node.isOpennetEnabled()) {
+		} else if (currentStep == WIZARD_STEP.NAME_SELECTION && core.getNode().isOpennetEnabled()) {
 			//Skip node name selection if not in darknet mode.
 			super.writeTemporaryRedirect(ctx, "Skip name selection",
 			        persistFields.appendTo(stepURL(WIZARD_STEP.DATASTORE_SIZE.name())));
@@ -255,11 +255,19 @@ public class FirstTimeWizardToadlet extends Toadlet {
 			super.writeTemporaryRedirect(ctx, "Wizard set preset", redirectTo.toString());
 			return;
 		} else if (request.isPartSet("back")) {
-			//User chose back, return to previous page.
-			redirectTarget = getPreviousStep(currentStep, persistFields.preset).name();
+			//User chose back, return to previous page, or cancel if single step.
+			if (request.isPartSet("singlestep")) {
+				redirectTarget = WIZARD_STEP.COMPLETE.name();
+			} else {
+				redirectTarget = getPreviousStep(currentStep, persistFields.preset).name();
+			}
 		} else {
 			try {
 				redirectTarget = steps.get(currentStep).postStep(request);
+				//Go to complete rather than go to next if single step.
+				if (request.isPartSet("singlestep") && !redirectTarget.startsWith(currentStep.name())) {
+					redirectTarget = WIZARD_STEP.COMPLETE.name();
+				}
 
 				//Opennet step can change the persisted value for opennet.
 				if (currentStep == WIZARD_STEP.OPENNET) {

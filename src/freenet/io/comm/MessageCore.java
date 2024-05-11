@@ -56,8 +56,8 @@ public class MessageCore {
 	private Dispatcher _dispatcher;
 	private Executor _executor;
 	/** _filters serves as lock for both */
-	private final LinkedList<MessageFilter> _filters = new LinkedList<MessageFilter>();
-	private final LinkedList<Message> _unclaimed = new LinkedList<Message>();
+	private final LinkedList<MessageFilter> _filters = new LinkedList<>();
+	private final LinkedList<Message> _unclaimed = new LinkedList<>();
 	private static final int MAX_UNMATCHED_FIFO_SIZE = 50000;
 	private static final long MAX_UNCLAIMED_FIFO_ITEM_LIFETIME = MINUTES.toMillis(10);  // maybe this should be per message type??
 	// FIXME do we need MIN_FILTER_REMOVE_TIME? Can we make this more efficient?
@@ -131,19 +131,18 @@ public class MessageCore {
 						Logger.minor(this, "Removing "+f);
 					i.remove();
 					if(timedOutFilters == null) 
-						timedOutFilters = new HashSet<MessageFilter>();
+						timedOutFilters = new HashSet<>();
 					if(!timedOutFilters.add(f))
 						Logger.error(this, "Filter "+f+" is in filter list twice!");
 					if(logMINOR) {
-						for (ListIterator<Message> it = _unclaimed.listIterator(); it.hasNext();) {
-							Message m = it.next();
-							MATCHED status = f.match(m, true, tStart);
-							if (status == MATCHED.MATCHED) {
-								// Don't match it, we timed out; two-level timeouts etc may want it for the next filter.
-								Logger.error(this, "Timed out but should have matched in _unclaimed: "+m+" for "+f);
-								break;
-							}
-						}
+                        for (Message m : _unclaimed) {
+                            MATCHED status = f.match(m, true, tStart);
+                            if (status == MATCHED.MATCHED) {
+                                // Don't match it, we timed out; two-level timeouts etc may want it for the next filter.
+                                Logger.error(this, "Timed out but should have matched in _unclaimed: " + m + " for " + f);
+                                break;
+                            }
+                        }
 					}
 				} else {
 					if(f.hasCallback() && nextTimeout > f.getTimeout())
@@ -203,10 +202,10 @@ public class MessageCore {
 					i.remove();
 					continue;
 				}
-				MATCHED status = f.match(m, tStart);
+				MATCHED status = f.match(m, false, tStart);
 				if(status == MATCHED.TIMED_OUT || status == MATCHED.TIMED_OUT_AND_MATCHED) {
 					if(timedOut == null)
-						timedOut = new ArrayList<MessageFilter>();
+						timedOut = new ArrayList<>();
 					timedOut.add(f);
 					i.remove();
 					continue;
@@ -269,7 +268,7 @@ public class MessageCore {
 				if(logMINOR) Logger.minor(this, "Rechecking filters and adding message");
 				for (ListIterator<MessageFilter> i = _filters.listIterator(); i.hasNext();) {
 					MessageFilter f = i.next();
-					MATCHED status = f.match(m, tStart);
+					MATCHED status = f.match(m, false, tStart);
 					if(status == MATCHED.MATCHED) {
 						matched = true;
 						match = f;
@@ -279,7 +278,7 @@ public class MessageCore {
 						break; // Only one match permitted per message
 					} else if(status == MATCHED.TIMED_OUT || status == MATCHED.TIMED_OUT_AND_MATCHED) {
 						if(timedOut == null)
-							timedOut = new ArrayList<MessageFilter>();
+							timedOut = new ArrayList<>();
 						timedOut.add(f);
 						i.remove();
 						continue;
@@ -328,7 +327,7 @@ public class MessageCore {
 			    MessageFilter f = i.next();
 			    if(f.matchesDroppedConnection(ctx)) {
 			    	if(droppedFilters == null)
-			    		droppedFilters = new ArrayList<MessageFilter>();
+			    		droppedFilters = new ArrayList<>();
 			    	droppedFilters.add(f);
 			    	i.remove();
 			    }
@@ -350,7 +349,7 @@ public class MessageCore {
 			    MessageFilter f = i.next();
 			    if(f.matchesRestartedConnection(ctx)) {
 			    	if(droppedFilters == null)
-			    		droppedFilters = new ArrayList<MessageFilter>();
+			    		droppedFilters = new ArrayList<>();
 			    	droppedFilters.add(f);
 			    	i.remove();
 			    }
@@ -609,19 +608,18 @@ public class MessageCore {
 	}
 	
 	public Map<String, Integer> getUnclaimedFIFOMessageCounts() {
-		Map<String, Integer> messageCounts = new HashMap<String, Integer>();
+		Map<String, Integer> messageCounts = new HashMap<>();
 		synchronized(_filters) {
-			for (ListIterator<Message> i = _unclaimed.listIterator(); i.hasNext();) {
-				Message m = i.next();
-				String messageName = m.getSpec().getName();
-				Integer messageCount = messageCounts.get(messageName);
-				if (messageCount == null) {
-					messageCounts.put(messageName, Integer.valueOf(1) );
-				} else {
-					messageCount = Integer.valueOf(messageCount.intValue() + 1);
-					messageCounts.put(messageName, messageCount );
-				}
-			}
+            for (Message m : _unclaimed) {
+                String messageName = m.getSpec().getName();
+                Integer messageCount = messageCounts.get(messageName);
+                if (messageCount == null) {
+                    messageCounts.put(messageName, 1);
+                } else {
+                    messageCount = messageCount + 1;
+                    messageCounts.put(messageName, messageCount);
+                }
+            }
 		}
 		return messageCounts;
 	}

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -78,7 +79,7 @@ public class AddressTracker {
 		try {
 			fis = new FileInputStream(data);
 			BufferedInputStream bis = new BufferedInputStream(fis);
-			InputStreamReader ir = new InputStreamReader(bis, "UTF-8");
+			InputStreamReader ir = new InputStreamReader(bis, StandardCharsets.UTF_8);
 			BufferedReader br = new BufferedReader(ir);
 			SimpleFieldSet fs = new SimpleFieldSet(br, false, true);
 			return new AddressTracker(fs, lastBootID);
@@ -103,8 +104,8 @@ public class AddressTracker {
 		timeDefinitelyNoPacketsSentIP = System.currentTimeMillis();
 		timeDefinitelyNoPacketsReceivedPeer = System.currentTimeMillis();
 		timeDefinitelyNoPacketsSentPeer = System.currentTimeMillis();
-		peerTrackers = new HashMap<Peer, PeerAddressTrackerItem>();
-		ipTrackers = new HashMap<InetAddress, InetAddressAddressTrackerItem>();
+		peerTrackers = new HashMap<>();
+		ipTrackers = new HashMap<>();
 	}
 
 	private AddressTracker(SimpleFieldSet fs, long lastBootID) throws FSParseException {
@@ -121,7 +122,7 @@ public class AddressTracker {
 		timeDefinitelyNoPacketsReceivedIP = System.currentTimeMillis();
 		timeDefinitelyNoPacketsSentPeer = fs.getLong("TimeDefinitelyNoPacketsSentPeer");
 		timeDefinitelyNoPacketsSentIP = fs.getLong("TimeDefinitelyNoPacketsSentIP");
-		peerTrackers = new HashMap<Peer, PeerAddressTrackerItem>();
+		peerTrackers = new HashMap<>();
 		SimpleFieldSet peers = fs.subset("Peers");
 		if(peers != null) {
 		Iterator<String> i = peers.directSubsetNameIterator();
@@ -133,7 +134,7 @@ public class AddressTracker {
 		}
 		}
 		}
-		ipTrackers = new HashMap<InetAddress, InetAddressAddressTrackerItem>();
+		ipTrackers = new HashMap<>();
 		SimpleFieldSet ips = fs.subset("IPs");
 		if(ips != null) {
 		Iterator<String> i = ips.directSubsetNameIterator();
@@ -299,7 +300,7 @@ public class AddressTracker {
 		try {
 			fos = new FileOutputStream(dataBak);
 			BufferedOutputStream bos = new BufferedOutputStream(fos);
-			OutputStreamWriter osw = new OutputStreamWriter(bos, "UTF-8");
+			OutputStreamWriter osw = new OutputStreamWriter(bos, StandardCharsets.UTF_8);
 			BufferedWriter bw = new BufferedWriter(osw);
 			SimpleFieldSet fs = getFieldset(bootID);
 			fs.writeTo(bw);

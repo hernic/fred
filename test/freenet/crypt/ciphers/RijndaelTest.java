@@ -3,10 +3,13 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.crypt.ciphers;
 
+import static org.junit.Assert.*;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -18,7 +21,8 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
-import junit.framework.TestCase;
+import org.junit.Test;
+
 import freenet.crypt.CTRBlockCipherTest;
 import freenet.crypt.UnsupportedCipherException;
 import freenet.support.HexUtil;
@@ -27,7 +31,7 @@ import freenet.support.io.Closer;
 /**
  * @author sdiz
  */
-public class RijndaelTest extends TestCase {
+public class RijndaelTest {
 	private final byte[] PLAINTXT128_1 = HexUtil.hexToBytes("0123456789abcdef1123456789abcdef");
 	private final byte[] KEY128_1 = HexUtil.hexToBytes("deadbeefcafebabe0123456789abcdef");
 	private final byte[] CIPHER128_1 = HexUtil.hexToBytes("8c5b8c04805c0e07dd62b381730d5d10");
@@ -45,6 +49,7 @@ public class RijndaelTest extends TestCase {
 
 	private static final Random rand = new Random(12345);
 
+	@Test
 	public void testKnownValue() throws UnsupportedCipherException {
 		Rijndael aes128 = new Rijndael(128, 128);
 		byte[] res128 = new byte[128 / 8];
@@ -1047,6 +1052,7 @@ public class RijndaelTest extends TestCase {
 					HexUtil.hexToBytes("8BAE4EFB70D33A9792EEA9BE70889D72") }, //
 	};
 
+	@Test
 	public void testStandardTestVK() throws UnsupportedCipherException {
 		// KEYSIZE=128
 		Rijndael aes128 = new Rijndael(128, 128);
@@ -1068,6 +1074,7 @@ public class RijndaelTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testStandardTestVKJCA() throws UnsupportedCipherException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 		if(!CTRBlockCipherTest.TEST_JCA) return;
 		// KEYSIZE=128
@@ -1093,6 +1100,7 @@ public class RijndaelTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testRandom() throws UnsupportedCipherException {
 		final int[] SIZE = new int[] { 128, /*192,*/ 256 };
 
@@ -1897,6 +1905,7 @@ public class RijndaelTest extends TestCase {
 					HexUtil.hexToBytes("7536b4b6490c083597f6596de8c627b1c75d0f4f9ba24de284ff575e25dda7eb") }, //
 	};
 	
+	@Test
 	public void testNonStandardTestVK() throws UnsupportedCipherException {
 		Rijndael aes128 = new Rijndael(256, 256);
 		for (int i = 0; i < TEST_VK256x256.length; i++) {
@@ -1922,6 +1931,7 @@ public class RijndaelTest extends TestCase {
 	/** Apply to both ecbnt (variable text) and ecbnk (variable key) tests */
 	final int[] GLADMAN_TEST_NUMBERS = new int[] { 44, 46, 48, 84, 86, 88 };
 
+	@Test
 	public void testGladmanTestVectors() throws UnsupportedCipherException, IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
 		checkGladmanTestVectors("t");
 		checkGladmanTestVectors("k");
@@ -1932,7 +1942,7 @@ public class RijndaelTest extends TestCase {
 			InputStream is = null;
 			try {
 				is = getClass().getResourceAsStream("/freenet/crypt/ciphers/rijndael-gladman-test-data/ecbn"+type+testNumber+".txt");
-				InputStreamReader isr = new InputStreamReader(is, "ISO-8859-1");
+				InputStreamReader isr = new InputStreamReader(is, StandardCharsets.ISO_8859_1);
 				BufferedReader br = new BufferedReader(isr);
 				for(int i=0;i<7;i++) br.readLine(); // Skip header
 				String line = br.readLine();

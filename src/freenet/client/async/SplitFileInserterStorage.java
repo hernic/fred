@@ -1385,13 +1385,12 @@ public class SplitFileInserterStorage {
         ClientCHK[] checkKeys = new ClientCHK[totalCheckBlocks];
         int dataPtr = 0;
         int checkPtr = 0;
-        for(int segNo = 0; segNo < segments.length; segNo++) {
-            SplitFileInserterSegmentStorage segment = segments[segNo];
-            for(int i=0;i<segment.dataBlockCount+segment.crossCheckBlockCount;i++) {
+        for (SplitFileInserterSegmentStorage segment : segments) {
+            for (int i = 0; i < segment.dataBlockCount + segment.crossCheckBlockCount; i++) {
                 dataKeys[dataPtr++] = segment.readKey(i);
             }
-            for(int i=0;i<segment.checkBlockCount;i++) {
-                checkKeys[checkPtr++] = segment.readKey(i+segment.dataBlockCount+segment.crossCheckBlockCount);
+            for (int i = 0; i < segment.checkBlockCount; i++) {
+                checkKeys[checkPtr++] = segment.readKey(i + segment.dataBlockCount + segment.crossCheckBlockCount);
             }
         }
         assert(dataPtr == dataKeys.length);

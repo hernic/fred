@@ -56,7 +56,7 @@ public class PartiallyReceivedBlock {
 	boolean _abortedLocally;
 	int _abortReason;
 	String _abortDescription;
-	ArrayList<PacketReceivedListener> _packetReceivedListeners = new ArrayList<PacketReceivedListener>();
+	ArrayList<PacketReceivedListener> _packetReceivedListeners = new ArrayList<>();
 
 	public PartiallyReceivedBlock(int packets, int packetSize, byte[] data) {
 		if (data.length != packets * packetSize) {
@@ -84,7 +84,7 @@ public class PartiallyReceivedBlock {
 			throw new AbortedException("Adding listener to aborted PRB");
 		}
 		_packetReceivedListeners.add(listener);
-		Deque<Integer> ret = new LinkedList<Integer>();
+		Deque<Integer> ret = new LinkedList<>();
 		for (int x = 0; x < _packets; x++) {
 			if (_received[x]) {
 				ret.addLast(x);

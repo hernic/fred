@@ -400,19 +400,19 @@ public class FetchContext implements Cloneable, Serializable {
         if(x == 0) {
             allowedMIMETypes = null;
         } else {
-            allowedMIMETypes = new HashSet<String>();
+            allowedMIMETypes = new HashSet<>();
             for(int i=0;i<x;i++) {
                 allowedMIMETypes.add(dis.readUTF());
             }
         }
         String s = dis.readUTF();
-        if(s.equals(""))
+        if(s.isEmpty())
             charset = null;
         else
             charset = s;
         canWriteClientCache = dis.readBoolean();
         s = dis.readUTF();
-        if(s.equals(""))
+        if(s.isEmpty())
             overrideMIME = null;
         else
             overrideMIME = s;
@@ -425,7 +425,7 @@ public class FetchContext implements Cloneable, Serializable {
           // input stream reached EOF, so it must have been and old version without scehmeHostAndPort.
           s = "";
         }
-        if (s.equals("")) {
+        if (s.isEmpty()) {
           schemeHostAndPort = null;
         } else {
           schemeHostAndPort = s;

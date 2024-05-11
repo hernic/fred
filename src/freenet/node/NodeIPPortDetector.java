@@ -58,12 +58,12 @@ public class NodeIPPortDetector {
 	 */
 	FreenetInetAddress[] detectPrimaryIPAddress() {
 		FreenetInetAddress addr = crypto.getBindTo();
-		if(addr.isRealInternetAddress(false, true, false)) {
+		if(addr.isRealInternetAddress(false, true, ipDetector.allowBindToLocalhost)) {
 			// Binding to a real internet address => don't want us to use the others, most likely
 			// he is on a multi-homed box where only one IP can be used for Freenet.
 			return new FreenetInetAddress[] { addr };
 		}
-		return ipDetector.detectPrimaryIPAddress(!crypto.config.includeLocalAddressesInNoderefs);
+		return ipDetector.detectPrimaryIPAddress(!crypto.getConfig().includeLocalAddressesInNoderefs);
 	}
 
 	/**
@@ -74,10 +74,10 @@ public class NodeIPPortDetector {
 	 */
 	Peer[] detectPrimaryPeers() {
 		final boolean logMINOR = NodeIPPortDetector.logMINOR;
-		ArrayList<Peer> addresses = new ArrayList<Peer>();
+		ArrayList<Peer> addresses = new ArrayList<>();
 		FreenetInetAddress[] addrs = detectPrimaryIPAddress();
 		for(FreenetInetAddress addr: addrs) {
-			addresses.add(new Peer(addr, crypto.portNumber));
+			addresses.add(new Peer(addr, crypto.getPortNumber()));
 			if(logMINOR)
 				Logger.minor(this, "Adding "+addr);
 		}
@@ -87,7 +87,7 @@ public class NodeIPPortDetector {
 		PeerNode[] peerList = crypto.getPeerNodes();
 		
 		if(peerList != null) {
-			HashMap<Peer,Integer> countsByPeer = new HashMap<Peer,Integer>();
+			HashMap<Peer,Integer> countsByPeer = new HashMap<>();
 			// FIXME use a standard mutable int object, we have one somewhere
 			for(PeerNode pn: peerList) {
 				Peer p = pn.getRemoteDetectedPeer();
@@ -143,7 +143,7 @@ public class NodeIPPortDetector {
 								
 								ipDetector.setMaybeSymmetric();
 								
-								Peer p = new Peer(best.getFreenetAddress(), crypto.portNumber);
+								Peer p = new Peer(best.getFreenetAddress(), crypto.getPortNumber());
 								if(!addresses.contains(p))
 									addresses.add(p);
 
@@ -155,7 +155,7 @@ public class NodeIPPortDetector {
 		}
 		lastPeers = addresses.toArray(new Peer[addresses.size()]);
 		if(logMINOR)
-			Logger.minor(this, "Returning for port "+crypto.portNumber+" : "+Arrays.toString(lastPeers));
+			Logger.minor(this, "Returning for port "+crypto.getPortNumber()+" : "+Arrays.toString(lastPeers));
 		return lastPeers;
 	}
 	

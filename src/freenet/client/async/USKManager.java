@@ -126,7 +126,7 @@ public class USKManager {
 	public synchronized long lookupKnownGood(USK usk) {
 		Long l = latestKnownGoodByClearUSK.get(usk.clearCopy());
 		if(l != null)
-			return l.longValue();
+			return l;
 		else return -1;
 	}
 
@@ -138,7 +138,7 @@ public class USKManager {
 	public synchronized long lookupLatestSlot(USK usk) {
 		Long l = latestSlotByClearUSK.get(usk.clearCopy());
 		if(l != null)
-			return l.longValue();
+			return l;
 		else return -1;
 	}
 
@@ -332,10 +332,9 @@ public class USKManager {
 				@Override
 				public void run() {
 					if(cancelled != null) {
-						for(int i=0;i<cancelled.size();i++) {
-							USKFetcher fetcher = cancelled.get(i);
-							fetcher.cancel(USKManager.this.context);
-						}
+                        for (USKFetcher fetcher : cancelled) {
+                            fetcher.cancel(USKManager.this.context);
+                        }
 					}
 					if(scheduleMe != null) scheduleMe.schedule(USKManager.this.context);
 				}
@@ -431,8 +430,8 @@ public class USKManager {
 		synchronized(this) {
 			Long l = latestKnownGoodByClearUSK.get(clear);
 			if(logMINOR) Logger.minor(this, "Old known good: "+l);
-			if((l == null) || (number > l.longValue())) {
-				l = Long.valueOf(number);
+			if((l == null) || (number > l)) {
+				l = number;
 				latestKnownGoodByClearUSK.put(clear, l);
 				if(logMINOR) Logger.minor(this, "Put "+number);
 			} else
@@ -440,8 +439,8 @@ public class USKManager {
 			
 			l = latestSlotByClearUSK.get(clear);
 			if(logMINOR) Logger.minor(this, "Old slot: "+l);
-			if((l == null) || (number > l.longValue())) {
-				l = Long.valueOf(number);
+			if((l == null) || (number > l)) {
+				l = number;
 				latestSlotByClearUSK.put(clear, l);
 				if(logMINOR) Logger.minor(this, "Put "+number);
 				newSlot = true;
@@ -471,8 +470,8 @@ public class USKManager {
 		synchronized(this) {
 			Long l = latestSlotByClearUSK.get(clear);
 			if(logMINOR) Logger.minor(this, "Old slot: "+l);
-			if((l == null) || (number > l.longValue())) {
-				l = Long.valueOf(number);
+			if((l == null) || (number > l)) {
+				l = number;
 				latestSlotByClearUSK.put(clear, l);
 				if(logMINOR) Logger.minor(this, "Put "+number);
 			} else

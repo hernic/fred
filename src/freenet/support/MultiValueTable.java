@@ -27,7 +27,7 @@ public class MultiValueTable<K,V> {
     }
 
     public MultiValueTable(int initialSize, int initialEntrySize) {
-        table = new Hashtable<K, Vector<V>>(initialSize);
+        table = new Hashtable<>(initialSize);
         ies = initialEntrySize;
     }
 
@@ -49,7 +49,7 @@ public class MultiValueTable<K,V> {
         synchronized (table) {
             Vector<V> v = table.get(key);
             if (v == null) {
-                v = new Vector<V>(ies);
+                v = new Vector<>(ies);
                 table.put(key, v);
             }
             v.addElement(value);
@@ -90,7 +90,7 @@ public class MultiValueTable<K,V> {
 			v = table.get(key);
 		}
         return (v == null ?
-                new EmptyEnumeration<V>() :
+                new EmptyEnumeration<>() :
                 v.elements());
     }
 
@@ -174,7 +174,7 @@ public class MultiValueTable<K,V> {
     public Enumeration<V> elements() {
 		synchronized (table) {
 			if (table.isEmpty())
-				return new EmptyEnumeration<V>();
+				return new EmptyEnumeration<>();
 			else
 				return new MultiValueEnumeration();
 		}

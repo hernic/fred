@@ -1,10 +1,15 @@
 package freenet.store.saltedhash;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Random;
 
-import junit.framework.TestCase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import freenet.crypt.DSAGroup;
 import freenet.crypt.DSAPrivateKey;
@@ -54,27 +59,28 @@ import freenet.support.io.FileUtil;
  * @author Simon Vocella <voxsim@gmail.com>
  *
  */
-public class SaltedHashFreenetStoreTest extends TestCase {
+public class SaltedHashFreenetStoreTest {
 
 	private Random weakPRNG = new Random(12340);
 	private PooledExecutor exec = new PooledExecutor();
 	private Ticker ticker = new TrivialTicker(exec);
 	private File tempDir;
 
-	@Override
-	protected void setUp() throws java.lang.Exception {
+	@Before
+	public void setUp() throws java.lang.Exception {
 		tempDir = new File("tmp-saltedHashfreenetstoretest");
 		tempDir.mkdir();
 		exec.start();
 		ResizablePersistentIntBuffer.setPersistenceTime(-1);
 	}
 
-	@Override
-	protected void tearDown() {
+	@After
+	public void tearDown() {
 		FileUtil.removeAll(tempDir);
 	}
 
 	/* Simple test with CHK for SaltedHashFreenetStore without slotFilter */
+	@Test
 	public void testSimpleCHK() throws IOException, CHKEncodeException, CHKVerifyException, CHKDecodeException {
 		File f = new File(tempDir, "saltstore");
 		FileUtil.removeAll(f);
@@ -97,6 +103,7 @@ public class SaltedHashFreenetStoreTest extends TestCase {
 	}
 
 	/* Simple test with SSK for SaltedHashFreenetStore without slotFilter */
+	@Test
 	public void testSimpleSSK() throws IOException, KeyCollisionException, SSKVerifyException, KeyDecodeException, SSKEncodeException, InvalidCompressionCodecException {
 		File f = new File(tempDir, "saltstore");
 		FileUtil.removeAll(f);
@@ -130,16 +137,17 @@ public class SaltedHashFreenetStoreTest extends TestCase {
 		ClientCHKBlock cb = new ClientCHKBlock(verify, key);
 		Bucket output = cb.decode(new ArrayBucketFactory(), 32768, false);
 		byte[] buf = BucketTools.toByteArray(output);
-		return new String(buf, "UTF-8");
+		return new String(buf, StandardCharsets.UTF_8);
 	}
 
 	private ClientCHKBlock encodeBlockCHK(String test) throws CHKEncodeException, IOException {
-		byte[] data = test.getBytes("UTF-8");
+		byte[] data = test.getBytes(StandardCharsets.UTF_8);
 		SimpleReadOnlyArrayBucket bucket = new SimpleReadOnlyArrayBucket(data);
 		return ClientCHKBlock.encode(bucket, false, false, (short)-1, bucket.size(), Compressor.DEFAULT_COMPRESSORDESCRIPTOR,
         null, (byte)0);
 	}
 
+	@Test
 	public void testOnCollisionsSSK() throws IOException, SSKEncodeException, InvalidCompressionCodecException, SSKVerifyException, KeyDecodeException, KeyCollisionException {
 		// With slot filters turned off, it goes straight to disk, because probablyInStore() always returns true.
 		checkOnCollisionsSSK(false);
@@ -172,7 +180,7 @@ public class SaltedHashFreenetStoreTest extends TestCase {
 		InsertableClientSSK ik = new InsertableClientSSK(docName, pkHash, pubKey, privKey, ckey, Key.ALGO_AES_PCFB_256_SHA256);
 
 		String test = "test";
-		SimpleReadOnlyArrayBucket bucket = new SimpleReadOnlyArrayBucket(test.getBytes("UTF-8"));
+		SimpleReadOnlyArrayBucket bucket = new SimpleReadOnlyArrayBucket(test.getBytes(StandardCharsets.UTF_8));
 		ClientSSKBlock block = ik.encode(bucket, false, false, (short)-1, bucket.size(), random, Compressor.DEFAULT_COMPRESSORDESCRIPTOR);
 		SSKBlock sskBlock = (SSKBlock) block.getBlock();
 		store.put(sskBlock, false, false);
@@ -187,7 +195,7 @@ public class SaltedHashFreenetStoreTest extends TestCase {
 		}
 
 		String test1 = "test1";
-		SimpleReadOnlyArrayBucket bucket1 = new SimpleReadOnlyArrayBucket(test1.getBytes("UTF-8"));
+		SimpleReadOnlyArrayBucket bucket1 = new SimpleReadOnlyArrayBucket(test1.getBytes(StandardCharsets.UTF_8));
 		ClientSSKBlock block1 = ik.encode(bucket1, false, false, (short)-1, bucket1.size(), random, Compressor.DEFAULT_COMPRESSORDESCRIPTOR);
 		SSKBlock sskBlock1 = (SSKBlock) block1.getBlock();
 
@@ -223,11 +231,11 @@ public class SaltedHashFreenetStoreTest extends TestCase {
 		ClientSSKBlock cb = ClientSSKBlock.construct(verify, key);
 		Bucket output = cb.decode(new ArrayBucketFactory(), 32768, false);
 		byte[] buf = BucketTools.toByteArray(output);
-		return new String(buf, "UTF-8");
+		return new String(buf, StandardCharsets.UTF_8);
 	}
 
 	private ClientSSKBlock encodeBlockSSK(String test, RandomSource random) throws IOException, SSKEncodeException, InvalidCompressionCodecException {
-		byte[] data = test.getBytes("UTF-8");
+		byte[] data = test.getBytes(StandardCharsets.UTF_8);
 		SimpleReadOnlyArrayBucket bucket = new SimpleReadOnlyArrayBucket(data);
 		InsertableClientSSK ik = InsertableClientSSK.createRandom(random, test);
 		return ik.encode(bucket, false, false, (short)-1, bucket.size(), random, Compressor.DEFAULT_COMPRESSORDESCRIPTOR);

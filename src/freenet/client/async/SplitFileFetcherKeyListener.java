@@ -247,8 +247,8 @@ public class SplitFileFetcherKeyListener implements KeyListener {
     public boolean probablyWantKey(Key key, byte[] saltedKey) {
         if(filter.checkFilter(saltedKey)) {
             byte[] salted = localSaltKey(key);
-            for(int i=0;i<segmentFilters.length;i++) {
-                if(segmentFilters[i].checkFilter(salted)) {
+            for (BinaryBloomFilter segmentFilter : segmentFilters) {
+                if (segmentFilter.checkFilter(salted)) {
                     return true;
                 }
             }
@@ -341,6 +341,11 @@ public class SplitFileFetcherKeyListener implements KeyListener {
     @Override
     public boolean isSSK() {
         return false;
+    }
+
+    @Override
+    public byte[] getWantedKey() {
+        return null;
     }
 
     public void writeStaticSettings(DataOutputStream dos) throws IOException {

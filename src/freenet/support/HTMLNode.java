@@ -30,17 +30,17 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 	 * separate child node to contain it. */
 	private String content;
 
-	private final Map<String, String> attributes = new HashMap<String, String>();
+	private final Map<String, String> attributes = new HashMap<>();
 
-	protected final List<HTMLNode> children = new ArrayList<HTMLNode>();
+	protected final List<HTMLNode> children = new ArrayList<>();
 
 	public HTMLNode(String name) {
 		this(name, null);
 	}
 
-	private static final ArrayList<String> EmptyTag = new ArrayList<String>(10);
-	private static final ArrayList<String> OpenTags = new ArrayList<String>(12);
-	private static final ArrayList<String> CloseTags = new ArrayList<String>(12);
+	private static final ArrayList<String> EmptyTag = new ArrayList<>(10);
+	private static final ArrayList<String> OpenTags = new ArrayList<>(12);
+	private static final ArrayList<String> CloseTags = new ArrayList<>(12);
 
 	static {
 		/* HTML elements which are allowed to be empty */
@@ -136,7 +136,7 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 	}
 
 	private String indentString(int indentDepth) {
-		StringBuffer indentLine = new StringBuffer();
+		StringBuilder indentLine = new StringBuilder();
 
 		for (int indentIndex = 0, indentCount = indentDepth+1; indentIndex < indentCount; indentIndex++) {
 			indentLine.append('\t');
@@ -354,13 +354,12 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 		if (!"#".equals(name)) {
 			return name;
 		}
-		for (int childIndex = 0, childCount = children.size(); childIndex < childCount; childIndex++) {
-			HTMLNode childNode = children.get(childIndex);
-			String tag = childNode.getFirstTag();
-			if (tag != null) {
-				return tag;
-			}
-		}
+        for (HTMLNode childNode : children) {
+            String tag = childNode.getFirstTag();
+            if (tag != null) {
+                return tag;
+            }
+        }
 		return null;
 	}
 
@@ -379,11 +378,10 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 				HTMLEncoder.encodeToBuffer(content, tagBuffer);
 				return tagBuffer;
 			}
-			
-			for(int childIndex = 0, childCount = children.size(); childIndex < childCount; childIndex++) {
-				HTMLNode childNode = children.get(childIndex);
-				childNode.generate(tagBuffer);
-			}
+
+            for (HTMLNode childNode : children) {
+                childNode.generate(tagBuffer);
+            }
 			return tagBuffer;
 		}
 		// Perhaps this should be something else, but since I don't know if '#' was not just arbitrary chosen, I'll just pick '%'
@@ -421,10 +419,9 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 				tagBuffer.append('\n');
 				tagBuffer.append(indentString(indentDepth+1));
 			}
-			for (int childIndex = 0, childCount = children.size(); childIndex < childCount; childIndex++) {
-				HTMLNode childNode = children.get(childIndex);
-				childNode.generate(tagBuffer,indentDepth+1);
-			}
+            for (HTMLNode childNode : children) {
+                childNode.generate(tagBuffer, indentDepth + 1);
+            }
 		}
 		/* add a closing tag */
 		if (newlineOpen(name)) {
@@ -444,10 +441,9 @@ public class HTMLNode implements XMLCharacterClasses, Cloneable {
 			return content;
 		}
 		StringBuilder tagBuffer=new StringBuilder();
-		for(int childIndex = 0, childCount = children.size(); childIndex < childCount; childIndex++) {
-			HTMLNode childNode = children.get(childIndex);
-			childNode.generate(tagBuffer);
-		}
+        for (HTMLNode childNode : children) {
+            childNode.generate(tagBuffer);
+        }
 		return tagBuffer.toString();
 	}
 	

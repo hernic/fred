@@ -69,40 +69,40 @@ public class SecurityLevels {
 		this.node = node;
 		SubConfig myConfig = config.createSubConfig("security-levels");
 		int sortOrder = 0;
-		networkThreatLevelCallback = new MyCallback<NETWORK_THREAT_LEVEL>() {
+		networkThreatLevelCallback = new MyCallback<>() {
 
-			@Override
-			public String get() {
-				synchronized(SecurityLevels.this) {
-					return networkThreatLevel.name();
-				}
-			}
+            @Override
+            public String get() {
+                synchronized (SecurityLevels.this) {
+                    return networkThreatLevel.name();
+                }
+            }
 
-			@Override
-			public String[] getPossibleValues() {
-				NETWORK_THREAT_LEVEL[] values = NETWORK_THREAT_LEVEL.values();
-				String[] names = new String[values.length];
-				for(int i=0;i<names.length;i++)
-					names[i] = values[i].name();
-				return names;
-			}
+            @Override
+            public String[] getPossibleValues() {
+                NETWORK_THREAT_LEVEL[] values = NETWORK_THREAT_LEVEL.values();
+                String[] names = new String[values.length];
+                for (int i = 0; i < names.length; i++)
+                    names[i] = values[i].name();
+                return names;
+            }
 
-			@Override
-			protected NETWORK_THREAT_LEVEL getValue() {
-				return networkThreatLevel;
-			}
+            @Override
+            protected NETWORK_THREAT_LEVEL getValue() {
+                return networkThreatLevel;
+            }
 
-			@Override
-			protected void setValue(String val) throws InvalidConfigValueException {
-				NETWORK_THREAT_LEVEL newValue = parseNetworkThreatLevel(val);
-				if(newValue == null)
-					throw new InvalidConfigValueException("Invalid value for network threat level: "+val);
-				synchronized(SecurityLevels.this) {
-					networkThreatLevel = newValue;
-				}
-			}
+            @Override
+            protected void setValue(String val) throws InvalidConfigValueException {
+                NETWORK_THREAT_LEVEL newValue = parseNetworkThreatLevel(val);
+                if (newValue == null)
+                    throw new InvalidConfigValueException("Invalid value for network threat level: " + val);
+                synchronized (SecurityLevels.this) {
+                    networkThreatLevel = newValue;
+                }
+            }
 
-		};
+        };
 		myConfig.register("networkThreatLevel", "HIGH", sortOrder++, false, true, "SecurityLevels.networkThreatLevelShort", "SecurityLevels.networkThreatLevel", networkThreatLevelCallback);
 		NETWORK_THREAT_LEVEL netLevel = NETWORK_THREAT_LEVEL.valueOf(myConfig.getString("networkThreatLevel"));
 		if(myConfig.getRawOption("networkThreatLevel") != null) {
@@ -118,40 +118,40 @@ public class SecurityLevels {
 		} else {
 			friendsThreatLevel = null;
 		}
-		physicalThreatLevelCallback = new MyCallback<PHYSICAL_THREAT_LEVEL>() {
+		physicalThreatLevelCallback = new MyCallback<>() {
 
-			@Override
-			public String get() {
-				synchronized(SecurityLevels.this) {
-					return physicalThreatLevel.name();
-				}
-			}
+            @Override
+            public String get() {
+                synchronized (SecurityLevels.this) {
+                    return physicalThreatLevel.name();
+                }
+            }
 
-			@Override
-			public String[] getPossibleValues() {
-				PHYSICAL_THREAT_LEVEL[] values = PHYSICAL_THREAT_LEVEL.values();
-				String[] names = new String[values.length];
-				for(int i=0;i<names.length;i++)
-					names[i] = values[i].name();
-				return names;
-			}
+            @Override
+            public String[] getPossibleValues() {
+                PHYSICAL_THREAT_LEVEL[] values = PHYSICAL_THREAT_LEVEL.values();
+                String[] names = new String[values.length];
+                for (int i = 0; i < names.length; i++)
+                    names[i] = values[i].name();
+                return names;
+            }
 
-			@Override
-			protected PHYSICAL_THREAT_LEVEL getValue() {
-				return physicalThreatLevel;
-			}
+            @Override
+            protected PHYSICAL_THREAT_LEVEL getValue() {
+                return physicalThreatLevel;
+            }
 
-			@Override
-			protected void setValue(String val) throws InvalidConfigValueException {
-				PHYSICAL_THREAT_LEVEL newValue = PHYSICAL_THREAT_LEVEL.valueOf(val);
-				if(newValue != null)
-					throw new InvalidConfigValueException("Invalid value for physical threat level: "+val);
-				synchronized(SecurityLevels.this) {
-					physicalThreatLevel = newValue;
-				}
-			}
+            @Override
+            protected void setValue(String val) throws InvalidConfigValueException {
+                PHYSICAL_THREAT_LEVEL newValue = PHYSICAL_THREAT_LEVEL.valueOf(val);
+                if (newValue != null)
+                    throw new InvalidConfigValueException("Invalid value for physical threat level: " + val);
+                synchronized (SecurityLevels.this) {
+                    physicalThreatLevel = newValue;
+                }
+            }
 
-		};
+        };
 		myConfig.register("physicalThreatLevel", "NORMAL", sortOrder++, false, true, "SecurityLevels.physicalThreatLevelShort", "SecurityLevels.physicalThreatLevel", physicalThreatLevelCallback);
 		PHYSICAL_THREAT_LEVEL physLevel = PHYSICAL_THREAT_LEVEL.valueOf(myConfig.getString("physicalThreatLevel"));
 		if(myConfig.getRawOption("physicalThreatLevel") != null) {
@@ -177,7 +177,7 @@ public class SecurityLevels {
 		private final ArrayList<SecurityLevelListener<T>> listeners;
 		
 		MyCallback() {
-			listeners = new ArrayList<SecurityLevelListener<T>>();
+			listeners = new ArrayList<>();
 		}
 		
 		public void addListener(SecurityLevelListener<T> listener) {
@@ -252,7 +252,7 @@ public class SecurityLevels {
 		HTMLNode parent = new HTMLNode("div");
 		if((newThreatLevel == NETWORK_THREAT_LEVEL.HIGH && networkThreatLevel != NETWORK_THREAT_LEVEL.MAXIMUM) || 
 				newThreatLevel == NETWORK_THREAT_LEVEL.MAXIMUM) {
-			if(node.peers.getDarknetPeers().length == 0) {
+			if(node.getPeers().getDarknetPeers().length == 0) {
 				parent.addChild("p", l10n("noFriendsWarning"));
 				if(newThreatLevel == NETWORK_THREAT_LEVEL.MAXIMUM) {
 					HTMLNode p = parent.addChild("p");
@@ -261,8 +261,8 @@ public class SecurityLevels {
 				}
 				parent.addChild("input", new String[] { "type", "name", "value" }, new String[] { "checkbox", checkboxName, "off" }, l10n("noFriendsCheckbox"));
 				return parent;
-			} else if(node.peers.countConnectedDarknetPeers() == 0) {
-				parent.addChild("p", l10n("noConnectedFriendsWarning", "added", Integer.toString(node.peers.getDarknetPeers().length)));
+			} else if(node.getPeers().countConnectedDarknetPeers() == 0) {
+				parent.addChild("p", l10n("noConnectedFriendsWarning", "added", Integer.toString(node.getPeers().getDarknetPeers().length)));
 				if(newThreatLevel == NETWORK_THREAT_LEVEL.MAXIMUM) {
 					HTMLNode p = parent.addChild("p");
 					NodeL10n.getBase().addL10nSubstitution(p, "SecurityLevels.maximumNetworkThreatLevelWarning", new String[] { "bold" },
@@ -270,8 +270,8 @@ public class SecurityLevels {
 				}
 				parent.addChild("input", new String[] { "type", "name", "value" }, new String[] { "checkbox", checkboxName, "off" }, l10n("noConnectedFriendsCheckbox"));
 				return parent;
-			} else if(node.peers.countConnectedDarknetPeers() < 10) {
-				parent.addChild("p", l10n("fewConnectedFriendsWarning", new String[] { "connected", "added" }, new String[] { Integer.toString(node.peers.countConnectedDarknetPeers()), Integer.toString(node.peers.getDarknetPeers().length)}));
+			} else if(node.getPeers().countConnectedDarknetPeers() < 10) {
+				parent.addChild("p", l10n("fewConnectedFriendsWarning", new String[] { "connected", "added" }, new String[] { Integer.toString(node.getPeers().countConnectedDarknetPeers()), Integer.toString(node.getPeers().getDarknetPeers().length)}));
 				if(newThreatLevel == NETWORK_THREAT_LEVEL.MAXIMUM) {
 					HTMLNode p = parent.addChild("p");
 					NodeL10n.getBase().addL10nSubstitution(p, "SecurityLevels.maximumNetworkThreatLevelWarning", new String[] { "bold" },

@@ -42,10 +42,10 @@ public class DiskSpaceUserAlert implements UserAlert {
     Status evaluate() {
         long shortTermLimit = core.getMinDiskFreeShortTerm();
         long longTermLimit = core.getMinDiskFreeLongTerm();
-        File tempDir = core.tempFilenameGenerator.getDir();
+        File tempDir = core.getTempFilenameGenerator().getDir();
         if(tempDir.getUsableSpace() < shortTermLimit)
             return Status.TRANSIENT; // Takes precedence.
-        FilenameGenerator fg = core.persistentFilenameGenerator;
+        FilenameGenerator fg = core.getPersistentFilenameGenerator();
         if(fg != null) {
             File persistentTempDir = fg.getDir();
             long space = persistentTempDir.getUsableSpace();
@@ -82,7 +82,7 @@ public class DiskSpaceUserAlert implements UserAlert {
     @Override
     public String getText() {
         Status status = getStatus();
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append(l10n("notEnoughSpaceIn", "where", getWhere(status).toString()));
         sb.append(" ");
         sb.append(status.getExplanation());
@@ -95,12 +95,12 @@ public class DiskSpaceUserAlert implements UserAlert {
         // FIXME return the filesystem rather than the directory. Will need java.nio.file (1.7).
         if(status == Status.PERSISTENT || status == Status.PERSISTENT_COMPLETION) {
             // Be very careful about race conditions!
-            FilenameGenerator fg = core.persistentFilenameGenerator;
+            FilenameGenerator fg = core.getPersistentFilenameGenerator();
             if(fg != null) {
                 return fg.getDir();
             }
         }
-        return core.tempFilenameGenerator.getDir();
+        return core.getTempFilenameGenerator().getDir();
     }
 
     private synchronized Status getStatus() {

@@ -3,12 +3,15 @@
  * http://www.gnu.org/ for further details of the GPL. */
 package freenet.support.io;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
-public class LineReadingInputStreamTest extends TestCase {
+public class LineReadingInputStreamTest {
 	public static final String BLOCK = "\ntesting1\ntesting2\r\ntesting3\n\n";
 	public static final String[] LINES = new String[] {
 		"",
@@ -26,16 +29,17 @@ public class LineReadingInputStreamTest extends TestCase {
 	public static final int MAX_LENGTH = 128;
 	public static final int BUFFER_SIZE = 128;
 	
+	@Test
 	public void testReadLineWithoutMarking() throws Exception {
 		// try utf8
-		InputStream is = new ByteArrayInputStream(STRESSED_LINE.getBytes("utf-8"));
+		InputStream is = new ByteArrayInputStream(STRESSED_LINE.getBytes(StandardCharsets.UTF_8));
 		LineReadingInputStream instance = new LineReadingInputStream(is);
 		assertEquals("", instance.readLineWithoutMarking(MAX_LENGTH, BUFFER_SIZE, true));
 		assertEquals("\u0114", instance.readLineWithoutMarking(MAX_LENGTH, BUFFER_SIZE, true));
 		assertNull(instance.readLineWithoutMarking(MAX_LENGTH, BUFFER_SIZE, true));
 		
 		// try ISO-8859-1
-		is = new ByteArrayInputStream(BLOCK.getBytes("ISO-8859-1"));
+		is = new ByteArrayInputStream(BLOCK.getBytes(StandardCharsets.ISO_8859_1));
 		instance = new LineReadingInputStream(is);
 		for(String expectedLine : LINES) {
 			assertEquals(expectedLine, instance.readLineWithoutMarking(MAX_LENGTH, BUFFER_SIZE, false));
@@ -67,16 +71,17 @@ public class LineReadingInputStreamTest extends TestCase {
 		assertEquals(NULL_LINE.substring(0, 5), instance.readLineWithoutMarking(BUFFER_SIZE, 1, true));
 	}
 	
+	@Test
 	public void testReadLine() throws Exception {
 		// try utf8
-		InputStream is = new ByteArrayInputStream(STRESSED_LINE.getBytes("utf-8"));
+		InputStream is = new ByteArrayInputStream(STRESSED_LINE.getBytes(StandardCharsets.UTF_8));
 		LineReadingInputStream instance = new LineReadingInputStream(is);
 		assertEquals("", instance.readLine(MAX_LENGTH, BUFFER_SIZE, true));
 		assertEquals("\u0114", instance.readLine(MAX_LENGTH, BUFFER_SIZE, true));
 		assertNull(instance.readLine(MAX_LENGTH, BUFFER_SIZE, true));
 		
 		// try ISO-8859-1
-		is = new ByteArrayInputStream(BLOCK.getBytes("ISO-8859-1"));
+		is = new ByteArrayInputStream(BLOCK.getBytes(StandardCharsets.ISO_8859_1));
 		instance = new LineReadingInputStream(is);
 		for(String expectedLine : LINES) {
 			assertEquals(expectedLine, instance.readLine(MAX_LENGTH, BUFFER_SIZE, false));
@@ -108,9 +113,10 @@ public class LineReadingInputStreamTest extends TestCase {
 		assertEquals(NULL_LINE.substring(0, 5), instance.readLine(BUFFER_SIZE, 1, true));
 	}
 
+	@Test
 	public void testBothImplementation() throws Exception {
-		ByteArrayInputStream bis1 =  new ByteArrayInputStream(BLOCK.getBytes("ISO-8859-1"));
-		ByteArrayInputStream bis2 =  new ByteArrayInputStream(BLOCK.getBytes("ISO-8859-1"));
+		ByteArrayInputStream bis1 =  new ByteArrayInputStream(BLOCK.getBytes(StandardCharsets.ISO_8859_1));
+		ByteArrayInputStream bis2 =  new ByteArrayInputStream(BLOCK.getBytes(StandardCharsets.ISO_8859_1));
 		LineReadingInputStream lris1 = new LineReadingInputStream(bis1);
 		LineReadingInputStream lris2 = new LineReadingInputStream(bis2);
 		

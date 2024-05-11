@@ -10,8 +10,8 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -246,7 +246,7 @@ public class Metadata implements Cloneable, Serializable {
 				hashes[i] = orig.hashes[i].clone();
 		}
 		if(manifestEntries != null) {
-			manifestEntries = new HashMap<String, Metadata>(orig.manifestEntries);
+			manifestEntries = new HashMap<>(orig.manifestEntries);
 			for(Map.Entry<String, Metadata> entry : manifestEntries.entrySet()) {
 				entry.setValue((Metadata)entry.getValue().clone());
 			}
@@ -441,7 +441,7 @@ public class Metadata implements Cloneable, Serializable {
 				byte[] toRead = new byte[len];
 				dis.readFully(toRead);
 				// Use UTF-8 for everything, for simplicity
-				mimeType = new String(toRead, "UTF-8");
+				mimeType = new String(toRead, StandardCharsets.UTF_8);
 				if(logMINOR) Logger.minor(this, "Raw MIME");
 				if(!DefaultMIMETypes.isPlausibleMIMEType(mimeType))
 					throw new MetadataParseException("Does not look like a MIME type: \""+mimeType+"\"");
@@ -678,7 +678,7 @@ public class Metadata implements Cloneable, Serializable {
 			if(manifestEntryCount < 0)
 				throw new MetadataParseException("Invalid manifest entry count: "+manifestEntryCount);
 
-			manifestEntries = new HashMap<String, Metadata>();
+			manifestEntries = new HashMap<>();
 
 			// Parse the sub-Manifest.
 
@@ -688,7 +688,7 @@ public class Metadata implements Cloneable, Serializable {
 				short nameLength = dis.readShort();
 				byte[] buf = new byte[nameLength];
 				dis.readFully(buf);
-				String name = new String(buf, "UTF-8").intern();
+				String name = new String(buf, StandardCharsets.UTF_8).intern();
 				if(logMINOR) Logger.minor(this, "Entry "+i+" name "+name);
 				short len = dis.readShort();
 				if(len < 0)
@@ -708,9 +708,9 @@ public class Metadata implements Cloneable, Serializable {
 			if(logMINOR) Logger.minor(this, "Reading archive internal redirect length "+len);
 			byte[] buf = new byte[len];
 			dis.readFully(buf);
-			targetName = new String(buf, "UTF-8");
+			targetName = new String(buf, StandardCharsets.UTF_8);
 			while(true) {
-				if(targetName.isEmpty()) throw new MetadataParseException("Invalid target name is empty: \""+new String(buf, "UTF-8")+"\"");
+				if(targetName.isEmpty()) throw new MetadataParseException("Invalid target name is empty: \""+new String(buf, StandardCharsets.UTF_8)+"\"");
 				if(targetName.charAt(0) == '/') {
 					targetName = targetName.substring(1);
 					continue;
@@ -720,24 +720,10 @@ public class Metadata implements Cloneable, Serializable {
 		}
 	}
 
-	private static final byte[] SPLITKEY;
-	static {
-		try {
-			SPLITKEY = "SPLITKEY".getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new Error(e);
-		}
-	}
-	
-	private static final byte[] CROSS_SEGMENT_SEED;
-	static {
-		try {
-			CROSS_SEGMENT_SEED = "CROSS_SEGMENT_SEED".getBytes("UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new Error(e);
-		}
-	}
-	
+	private static final byte[] SPLITKEY = "SPLITKEY".getBytes(StandardCharsets.UTF_8);
+
+	private static final byte[] CROSS_SEGMENT_SEED = "CROSS_SEGMENT_SEED".getBytes(StandardCharsets.UTF_8);
+
 	public static byte[] getCryptoKey(HashResult[] hashes) {
 		if(hashes == null || hashes.length == 0 || !HashResult.contains(hashes, HashType.SHA256))
 			throw new IllegalArgumentException("No hashes in getCryptoKey - need hashes to generate splitfile key!");
@@ -806,7 +792,7 @@ public class Metadata implements Cloneable, Serializable {
 		noMIME = true;
 		//mimeType = null;
 		//clientMetadata = new ClientMetadata(null);
-		manifestEntries = new HashMap<String, Metadata>();
+		manifestEntries = new HashMap<>();
 		for (Map.Entry<String, Object> entry: dir.entrySet()) {
 			String key = entry.getKey().intern();
 			Object o = entry.getValue();
@@ -854,7 +840,7 @@ public class Metadata implements Cloneable, Serializable {
 		noMIME = true;
 		//mimeType = null;
 		//clientMetadata = new ClientMetadata(null);
-		manifestEntries = new HashMap<String, Metadata>();
+		manifestEntries = new HashMap<>();
 		for (Map.Entry<String, Object> entry: dir.entrySet()) {
 			String key = entry.getKey().intern();
 			if(key.indexOf('/') != -1)
@@ -868,7 +854,7 @@ public class Metadata implements Cloneable, Serializable {
 					Logger.debug(this, "Putting metadata for "+key);
 				manifestEntries.put(key, data);
 			} else if(o instanceof HashMap) {
-				if(key.equals("")) {
+				if(key.isEmpty()) {
 					Logger.error(this, "Creating a subdirectory called \"\" - it will not be possible to access this through fproxy!", new Exception("error"));
 				}
 				HashMap<String, Object> hm = Metadata.forceMap(o);
@@ -897,7 +883,7 @@ public class Metadata implements Cloneable, Serializable {
 		noMIME = true;
 		mimeType = null;
 		clientMetadata = new ClientMetadata();
-		manifestEntries = new HashMap<String, Metadata>();
+		manifestEntries = new HashMap<>();
 		for (Map.Entry<String, Object> entry: dir.entrySet()) {
 			String key = entry.getKey().intern();
 			Object o = entry.getValue();
@@ -1328,7 +1314,7 @@ public class Metadata implements Cloneable, Serializable {
      * @throws MetadataParseException
      */
     public HashMap<String, Metadata> getDocuments() {
-    	HashMap<String, Metadata> docs = new HashMap<String, Metadata>();
+    	HashMap<String, Metadata> docs = new HashMap<>();
 		for (Map.Entry<String, Metadata> entry: manifestEntries.entrySet()) {
         	String st = entry.getKey();
         	if (st.length()>0)
@@ -1527,7 +1513,7 @@ public class Metadata implements Cloneable, Serializable {
 				if(hasCompressedMIMEParams)
 					dos.writeShort(compressedMIMEParams);
 			} else {
-				byte[] data = mimeType.getBytes("UTF-8");
+				byte[] data = mimeType.getBytes(StandardCharsets.UTF_8);
 				if(data.length > 255) throw new Error("MIME type too long: "+data.length+" bytes: "+mimeType);
 				dos.writeByte((byte)data.length);
 				dos.write(data);
@@ -1580,7 +1566,7 @@ public class Metadata implements Cloneable, Serializable {
 			LinkedList<Metadata> unresolvedMetadata = null;
 			for(Map.Entry<String, Metadata> entry: manifestEntries.entrySet()) {
 				String name = entry.getKey();
-				byte[] nameData = name.getBytes("UTF-8");
+				byte[] nameData = name.getBytes(StandardCharsets.UTF_8);
 				if(nameData.length > Short.MAX_VALUE) throw new IllegalArgumentException("Manifest name too long");
 				dos.writeShort(nameData.length);
 				dos.write(nameData);
@@ -1599,7 +1585,7 @@ public class Metadata implements Cloneable, Serializable {
 						} else {
 							kill = true;
 							if(unresolvedMetadata == null)
-								unresolvedMetadata = new LinkedList<Metadata>();
+								unresolvedMetadata = new LinkedList<>();
 							unresolvedMetadata.addLast(meta);
 						}
 					}
@@ -1608,7 +1594,7 @@ public class Metadata implements Cloneable, Serializable {
 				} catch (MetadataUnresolvedException e) {
 					Metadata[] metas = e.mustResolve;
 					if(unresolvedMetadata == null)
-						unresolvedMetadata = new LinkedList<Metadata>();
+						unresolvedMetadata = new LinkedList<>();
 					for(Metadata m: metas)
 						unresolvedMetadata.addFirst(m);
 					kill = true;
@@ -1622,7 +1608,7 @@ public class Metadata implements Cloneable, Serializable {
 		}
 
 		if((documentType == DocumentType.ARCHIVE_INTERNAL_REDIRECT) || (documentType == DocumentType.ARCHIVE_METADATA_REDIRECT) || (documentType == DocumentType.SYMBOLIC_SHORTLINK)) {
-			byte[] data = targetName.getBytes("UTF-8");
+			byte[] data = targetName.getBytes(StandardCharsets.UTF_8);
 			if(data.length > Short.MAX_VALUE) throw new IllegalArgumentException("Archive internal redirect name too long");
 			dos.writeShort(data.length);
 			dos.write(data);
@@ -1757,7 +1743,7 @@ public class Metadata implements Cloneable, Serializable {
 			m = new Metadata();
 			m.documentType = DocumentType.SIMPLE_MANIFEST;
 			m.noMIME = true;
-			m.manifestEntries = new HashMap<String, Metadata>();
+			m.manifestEntries = new HashMap<>();
 		}
 
 		/**

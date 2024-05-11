@@ -19,7 +19,7 @@ import java.util.Set;
 public class UIDRoutingContextTracker {
 	
 	private final HashMap<Long,UIDRoutingContext> routingContexts =
-		new HashMap<Long,UIDRoutingContext>();
+            new HashMap<>();
 	
 	public class UIDRoutingContext {
 		
@@ -37,8 +37,8 @@ public class UIDRoutingContextTracker {
 		UIDRoutingContext(long uid, boolean insert) {
 			this.uid = uid;
 			this.insert = insert;
-			tags = new ArrayList<UIDTag>();
-			routedTo = new HashSet<WeakReference<PeerNode>>();
+			tags = new ArrayList<>();
+			routedTo = new HashSet<>();
 			finished = false;
 		}
 		

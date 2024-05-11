@@ -3,13 +3,16 @@
 * http://www.gnu.org/ for further details of the GPL. */
 package freenet.support.compress;
 
+import static org.junit.Assert.*;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
-import junit.framework.TestCase;
+import org.junit.Test;
 
 import freenet.keys.ClientSSKBlock;
 import freenet.keys.FreenetURI;
@@ -25,7 +28,7 @@ import freenet.support.io.NullBucket;
 /**
  * Test case for {@link Bzip2Compressor} class.
  */
-public class OldLZMACompressorTest extends TestCase {
+public class OldLZMACompressorTest {
 
 	private static final String UNCOMPRESSED_DATA_1 = GzipCompressorTest.UNCOMPRESSED_DATA_1;
 	private static final byte[] COMPRESSED_DATA_1_LZMA_OLD = new byte[]{ 0 , 48 ,
@@ -48,19 +51,21 @@ public class OldLZMACompressorTest extends TestCase {
 	/**
 	 * test BZIP2 compressor's identity and functionality
 	 */
+	@Test
 	public void testOldLzmaCompressor() throws IOException {
 		Compressor.COMPRESSOR_TYPE lzcompressor = Compressor.COMPRESSOR_TYPE.LZMA;
 		Compressor compressorZero = Compressor.COMPRESSOR_TYPE.getCompressorByMetadataID((short)2);
 		assertEquals(lzcompressor, compressorZero);
 	}
 
+	@Test
 	public void testCanUncompressKeyCompressedWithOldLzma() throws Exception {
 		byte[] data = (UNCOMPRESSED_DATA_1
 				+ UNCOMPRESSED_DATA_1
 				+ UNCOMPRESSED_DATA_1
 				+ UNCOMPRESSED_DATA_1
 				+ UNCOMPRESSED_DATA_1
-				+ UNCOMPRESSED_DATA_1).getBytes("UTF-8");
+				+ UNCOMPRESSED_DATA_1).getBytes(StandardCharsets.UTF_8);
 		// use static inline data, created with the following commented code.
 		// DummyRandomSource random = new DummyRandomSource();
 		// InsertableClientSSK ik = InsertableClientSSK.createRandom(random, "foo");
@@ -173,6 +178,7 @@ public class OldLZMACompressorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCompress() throws IOException, CompressionRatioException {
 
 		// do bzip2 compression
@@ -183,6 +189,7 @@ public class OldLZMACompressorTest extends TestCase {
 
 	}
 
+	@Test
 	public void testBucketDecompress() throws IOException {
 
 		byte[] compressedData = COMPRESSED_DATA_1_LZMA_OLD;
@@ -195,6 +202,7 @@ public class OldLZMACompressorTest extends TestCase {
 		assertEquals(uncompressedString, UNCOMPRESSED_DATA_1);
 	}
 
+	@Test
 	public void testByteArrayDecompress() throws IOException, CompressionRatioException {
 
         // build 5k array
@@ -219,6 +227,7 @@ public class OldLZMACompressorTest extends TestCase {
 		}
 	}
 
+	@Test
 	public void testCompressException() throws IOException {
 
 		byte[] uncompressedData = UNCOMPRESSED_DATA_1.getBytes();
@@ -235,6 +244,7 @@ public class OldLZMACompressorTest extends TestCase {
 		//fail("did not throw expected CompressionOutputSizeException");
 	}
 
+	@Test
 	public void testDecompressException() throws IOException, CompressionRatioException {
 
 		// build 5k array

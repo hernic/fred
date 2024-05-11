@@ -164,8 +164,8 @@ public class InsertException extends Exception implements Cloneable {
 	    }
     }
 	
-    private static final HashMap<Integer, InsertExceptionMode> modes = 
-        new HashMap<Integer, InsertExceptionMode>();
+    private static final HashMap<Integer, InsertExceptionMode> modes =
+            new HashMap<>();
 
     public static enum InsertExceptionMode {
         

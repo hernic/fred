@@ -76,12 +76,12 @@ public abstract class Fields {
 		'z'
 	};
 	private static final long[] MULTIPLES = {
-		1000, 1l << 10,
-		1000 * 1000, 1l << 20,
-		1000l * 1000l * 1000l, 1l << 30,
-		1000l * 1000l * 1000l * 1000l, 1l << 40,
-		1000l * 1000l * 1000l * 1000l * 1000, 1l << 50,
-		1000l * 1000l * 1000l * 1000l * 1000l * 1000l, 1l << 60
+		1000, 1L << 10,
+		1000 * 1000, 1L << 20,
+		1000L * 1000L * 1000L, 1L << 30,
+		1000L * 1000L * 1000L * 1000L, 1L << 40,
+		1000L * 1000L * 1000L * 1000L * 1000, 1L << 50,
+		1000L * 1000L * 1000L * 1000L * 1000L * 1000L, 1L << 60
 	};
 	private static final String[] MULTIPLES_2 = {
 		"k", "K", "m", "M", "g", "G", "t", "T", "p", "P", "e", "E"
@@ -288,23 +288,40 @@ public abstract class Fields {
 				deltaType = Calendar.DAY_OF_YEAR;
 			else {
 				String deltaTypeString = date.substring(chop).toLowerCase();
-				if(deltaTypeString.equals("y") || deltaTypeString.equals("year"))
-					deltaType = Calendar.YEAR;
-				else if(deltaTypeString.equals("month") || deltaTypeString.equals("mo"))
-					deltaType = Calendar.MONTH;
-				else if(deltaTypeString.equals("week") || deltaTypeString.equals("w"))
-					deltaType = Calendar.WEEK_OF_YEAR;
-				else if(deltaTypeString.equals("day") || deltaTypeString.equals("d"))
-					deltaType = Calendar.DAY_OF_YEAR;
-				else if(deltaTypeString.equals("hour") || deltaTypeString.equals("h"))
-					deltaType = Calendar.HOUR;
-				else if(deltaTypeString.equals("minute") || deltaTypeString.equals("min"))
-					deltaType = Calendar.MINUTE;
-				else if(deltaTypeString.equals("second") || deltaTypeString.equals("s") || deltaTypeString.equals("sec"))
-					deltaType = Calendar.SECOND;
-				else
-					throw new NumberFormatException(
-						"unknown time/date delta type: " + deltaTypeString);
+				switch (deltaTypeString) {
+					case "y":
+					case "year":
+						deltaType = Calendar.YEAR;
+						break;
+					case "month":
+					case "mo":
+						deltaType = Calendar.MONTH;
+						break;
+					case "week":
+					case "w":
+						deltaType = Calendar.WEEK_OF_YEAR;
+						break;
+					case "day":
+					case "d":
+						deltaType = Calendar.DAY_OF_YEAR;
+						break;
+					case "hour":
+					case "h":
+						deltaType = Calendar.HOUR;
+						break;
+					case "minute":
+					case "min":
+						deltaType = Calendar.MINUTE;
+						break;
+					case "second":
+					case "s":
+					case "sec":
+						deltaType = Calendar.SECOND;
+						break;
+					default:
+						throw new NumberFormatException(
+								"unknown time/date delta type: " + deltaTypeString);
+				}
 				GregorianCalendar gc = new GregorianCalendar();
 				gc.add(deltaType, (date.charAt(0) == '+') ? num : -num);
 				return gc.getTime().getTime();
@@ -706,7 +723,7 @@ public abstract class Fields {
 		final String lower = limit.toLowerCase();
 		for(String ending :
 			new String[] {
-				"/s", "/sec", "/second", "bps", NodeL10n.getBase().getString("FirstTimeWizardToadlet.bandwidthPerSecond").toLowerCase()
+				"/s", "/sec", "/second", "ps", NodeL10n.getBase().getString("FirstTimeWizardToadlet.bandwidthPerSecond").toLowerCase()
 			}) {
 			if(lower.endsWith(ending)) {
 				return limit.substring(0, limit.length() - ending.length());
@@ -732,11 +749,16 @@ public abstract class Fields {
 
 	/**
 	 * Parse a human-readable string possibly including SI and ICE units into an integer.
+     * 
+     * If it is a size (suffix b für bits or B for bytes), the size is returned as bytes.
+     * 8b = 1, 8B = 8.
 	 * @throws NumberFormatException
 	 *             if the string is not parseable
 	 */
 	public static int parseInt(String s) throws NumberFormatException {
-		s = s.replaceFirst("(i)*B$", "");
+        boolean isSizeInBits = s.endsWith("b");
+        // strip bit/byte suffix
+        s = s.replaceFirst((isSizeInBits ? "(i)*b$" : "(i)*B$"), "");
 		int res = 1;
 		int x = s.length() - 1;
 		int idx;
@@ -750,7 +772,7 @@ public abstract class Fields {
 			res = Integer.MAX_VALUE;
 			throw new NumberFormatException(e.getMessage());
 		}
-		return res;
+		return isSizeInBits ? res / 8 : res;
 	}
 
 	/**
@@ -770,19 +792,28 @@ public abstract class Fields {
 			}
 			String multiplier = s.substring(0, x + 1).trim();
 			if(multiplier.indexOf('.') > -1 || multiplier.indexOf('E') > -1) {
-				res *= Double.parseDouble(multiplier);
+				double m = Double.parseDouble(multiplier);
+				checkLongOverflowWhenMultiply(res, m);
+				res *= m;
 				if(logMINOR)
 					Logger.minor(Fields.class, "Parsed " + multiplier + " of " + s + " as double: " + res);
 			} else {
-				res *= Long.parseLong(multiplier);
+				long m = Long.parseLong(multiplier);
+				checkLongOverflowWhenMultiply(res, m);
+				res *= m;
 				if(logMINOR)
 					Logger.minor(Fields.class, "Parsed " + multiplier + " of " + s + " as long: " + res);
 			}
 		} catch(ArithmeticException e) {
-			res = Long.MAX_VALUE;
 			throw new NumberFormatException(e.getMessage());
 		}
 		return res;
+	}
+
+	private static void checkLongOverflowWhenMultiply(long a, Number b) {
+		if (a != 0 && Math.abs(b.longValue()) > Long.MAX_VALUE / a) {
+			throw new NumberFormatException("Long overflow");
+		}
 	}
 
 	public static String longToString(long val, boolean isSize) {

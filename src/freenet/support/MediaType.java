@@ -48,7 +48,7 @@ public class MediaType {
 	private final String subtype;
 
 	/** The parameters. */
-	private final LinkedHashMap<String, String> parameters = new LinkedHashMap<String, String>();
+	private final LinkedHashMap<String, String> parameters = new LinkedHashMap<>();
 
 	/**
 	 * Creates a new media type by parsing the given string.
@@ -270,7 +270,7 @@ public class MediaType {
 	}
 
     public LinkedHashMap<String, String> getParameters() {
-        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+        LinkedHashMap<String, String> map = new LinkedHashMap<>();
         map.putAll(parameters);
         return map;
     }

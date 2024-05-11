@@ -156,7 +156,7 @@ public class CSSReadFilter implements ContentDataFilter, CharsetExtractor {
 	public static String filterMediaList(String media) {
 		String[] split = media.split(",");
 		boolean first = true;
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for(String m : split) {
 			m = m.trim();
 			int i;

@@ -70,7 +70,7 @@ public class Message {
 	private final MessageType _spec;
 	private final WeakReference<? extends PeerContext> _sourceRef;
 	private final boolean _internal;
-	private final HashMap<String, Object> _payload = new HashMap<String, Object>(8);
+	private final HashMap<String, Object> _payload = new HashMap<>(8);
 	private List<Message> _subMessages;
 	public final long localInstantiationTime;
 	final int _receivedByteCount;
@@ -370,7 +370,7 @@ public class Message {
 	}
 
 	public void addSubMessage(Message subMessage) {
-		if (_subMessages == null) _subMessages = new ArrayList<Message>();
+		if (_subMessages == null) _subMessages = new ArrayList<>();
 		_subMessages.add(subMessage);
 	}
 
